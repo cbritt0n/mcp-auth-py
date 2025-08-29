@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-auth-py"
+version = "0.1.0"
+description = "Plug-and-play authentication, authorization, and rate-limiting for MCP servers"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "python-jose",
+    "authlib",
+    "casbin",
+    "redis",
+    "pydantic-settings",
+    "uvicorn",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourname/mcp-auth-py"
+Documentation = "https://github.com/yourname/mcp-auth-py"
+Source = "https://github.com/yourname/mcp-auth-py"
