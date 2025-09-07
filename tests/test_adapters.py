@@ -16,8 +16,17 @@ class FakeProvider(Provider):
         token = auth.split(None, 1)[1]
         if token != self.expect_token:
             return AuthResult(valid=False, principal=None, claims={}, raw={})
-        principal = Principal(id="user:123", provider="fake", name="Test User", email="test@example.com", roles=["user"], raw={})
-        return AuthResult(valid=True, principal=principal, claims={"sub": "user:123"}, raw={})
+        principal = Principal(
+            id="user:123",
+            provider="fake",
+            name="Test User",
+            email="test@example.com",
+            roles=["user"],
+            raw={},
+        )
+        return AuthResult(
+            valid=True, principal=principal, claims={"sub": "user:123"}, raw={}
+        )
 
 
 def test_token_to_principal_sync_success():

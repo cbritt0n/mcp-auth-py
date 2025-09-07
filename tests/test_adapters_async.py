@@ -20,8 +20,17 @@ class AsyncFakeProvider(Provider):
         token = auth.split(None, 1)[1]
         if token != self.expect_token:
             return AuthResult(valid=False, principal=None, claims={}, raw={})
-        principal = Principal(id="user:async", provider="fake", name="Async User", email="async@example.com", roles=["user"], raw={})
-        return AuthResult(valid=True, principal=principal, claims={"sub": "user:async"}, raw={})
+        principal = Principal(
+            id="user:async",
+            provider="fake",
+            name="Async User",
+            email="async@example.com",
+            roles=["user"],
+            raw={},
+        )
+        return AuthResult(
+            valid=True, principal=principal, claims={"sub": "user:async"}, raw={}
+        )
 
 
 HAS_PYTEST_ASYNCIO = importlib.util.find_spec("pytest_asyncio") is not None
@@ -30,7 +39,6 @@ HAS_PYTEST_ASYNCIO = importlib.util.find_spec("pytest_asyncio") is not None
 if HAS_PYTEST_ASYNCIO:
     import pytest
 
-
     @pytest.mark.asyncio
     async def test_token_to_principal_async_success():
         provider = AsyncFakeProvider(expect_token="async-good")
@@ -38,19 +46,18 @@ if HAS_PYTEST_ASYNCIO:
         assert principal is not None
         assert principal.id == "user:async"
 
-
     @pytest.mark.asyncio
     async def test_token_to_principal_async_failure():
         provider = AsyncFakeProvider(expect_token="async-good")
         principal = await token_to_principal(provider, "async-bad")
         assert principal is None
 else:
+
     def test_token_to_principal_async_success():
         provider = AsyncFakeProvider(expect_token="async-good")
         principal = asyncio.run(token_to_principal(provider, "async-good"))
         assert principal is not None
         assert principal.id == "user:async"
-
 
     def test_token_to_principal_async_failure():
         provider = AsyncFakeProvider(expect_token="async-good")

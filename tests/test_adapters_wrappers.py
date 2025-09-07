@@ -12,7 +12,14 @@ class SimpleProvider(Provider):
     def authenticate(self, request: Any) -> AuthResult:
         auth = request.headers.get("Authorization", "")
         if auth == "Bearer ok":
-            p = Principal(id="u1", provider="simple", name="OK", email="ok@example.com", roles=[], raw={})
+            p = Principal(
+                id="u1",
+                provider="simple",
+                name="OK",
+                email="ok@example.com",
+                roles=[],
+                raw={},
+            )
             return AuthResult(valid=True, principal=p, claims={"sub": "u1"}, raw={})
         return AuthResult(valid=False, principal=None, claims={}, raw={})
 
