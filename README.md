@@ -91,6 +91,25 @@ python -m pip install -r requirements-dev.txt  # or pip install pytest
 pytest -q
 ```
 
+Provider SDKs (optional)
+
+Some providers rely on optional cloud SDKs for extra features (for example, `boto3` for Cognito `get_user`,
+or `google-auth` for verifying Google ID tokens). You can install provider SDKs individually with pip when
+you want to run provider integration tests or exercise SDK-backed functionality:
+
+```bash
+# install provider SDKs individually
+pip install google-auth boto3 msal azure-identity
+
+# or install the package extras if you prefer (may build package wheel)
+pip install .[google]
+pip install .[aws]
+pip install .[azure]
+```
+
+The CI workflow installs these SDKs directly before running provider integration tests to avoid building the
+project wheel in CI.
+
 ## Development notes
 - Providers cache JWKS per provider instance to reduce network calls. For cross-process sharing, consider
   using Redis or another shared cache.
