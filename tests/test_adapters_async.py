@@ -1,10 +1,10 @@
 import asyncio
-from typing import Any
 import importlib.util
+from typing import Any
 
 from mcp_auth.adapters import token_to_principal
-from mcp_auth.providers.base import AuthResult, Provider
 from mcp_auth.models import Principal
+from mcp_auth.providers.base import AuthResult, Provider
 
 
 class AsyncFakeProvider(Provider):
@@ -51,6 +51,7 @@ if HAS_PYTEST_ASYNCIO:
         provider = AsyncFakeProvider(expect_token="async-good")
         principal = await token_to_principal(provider, "async-bad")
         assert principal is None
+
 else:
 
     def test_token_to_principal_async_success():

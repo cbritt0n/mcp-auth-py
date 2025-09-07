@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 
 from mcp_auth.adapters import authenticate_request, authenticate_request_sync
-from mcp_auth.providers.base import AuthResult, Provider, ProviderError
 from mcp_auth.models import Principal
+from mcp_auth.providers.base import AuthResult, Provider, ProviderError
 
 
 class SimpleProvider(Provider):

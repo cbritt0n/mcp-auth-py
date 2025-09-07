@@ -1,8 +1,8 @@
 from typing import Any
 
 from mcp_auth.adapters import token_to_principal_sync
-from mcp_auth.providers.base import AuthResult, Provider
 from mcp_auth.models import Principal
+from mcp_auth.providers.base import AuthResult, Provider
 
 
 class FakeProvider(Provider):
