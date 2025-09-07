@@ -39,7 +39,8 @@ def _run_coro_sync(coro):
         return asyncio.run(coro)
 
     if loop.is_running():
-        # Running inside an existing loop (e.g. interactive). Use asyncio.run as fallback.
+        # Running inside an existing loop (for example: interactive shells).
+        # Use asyncio.run as a safe fallback to execute the coroutine.
         return asyncio.run(coro)
     return loop.run_until_complete(coro)
 

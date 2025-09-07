@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any
+import importlib.util
 
 from mcp_auth.adapters import token_to_principal
 from mcp_auth.providers.base import AuthResult, Provider
@@ -23,11 +24,7 @@ class AsyncFakeProvider(Provider):
         return AuthResult(valid=True, principal=principal, claims={"sub": "user:async"}, raw={})
 
 
-try:
-    import pytest_asyncio  # type: ignore
-    HAS_PYTEST_ASYNCIO = True
-except Exception:
-    HAS_PYTEST_ASYNCIO = False
+HAS_PYTEST_ASYNCIO = importlib.util.find_spec("pytest_asyncio") is not None
 
 
 if HAS_PYTEST_ASYNCIO:
