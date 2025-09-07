@@ -146,6 +146,30 @@ Production checklist
 - Rotate secrets/keys and configure alerting for signature verification failures and repeated
     JWKS fetch errors.
 
+Adapters
+--------
+If your MCP server is not ASGI (or you need a tiny sync wrapper), the package includes
+`mcp_auth.adapters` with helpers to call providers from arbitrary server contexts.
+
+- `authenticate_request(provider, request)` — async helper that awaits provider results.
+- `authenticate_request_sync(provider, request)` — sync wrapper that runs async providers
+    in a threadpool for legacy servers.
+- `token_to_principal(provider, token)` / `token_to_principal_sync(...)` — helpers that
+    create a minimal request from a bearer token and return the canonical `Principal`.
+
+Example (sync server):
+
+```python
+from mcp_auth.providers.registry import get_provider
+from mcp_auth.adapters import token_to_principal_sync
+
+provider = get_provider("aws")
+principal = token_to_principal_sync(provider, token)
+if principal is None:
+        # unauthorized
+        ...
+```
+
 Quick commands
 ```bash
 # install optional redis_jwks extras
