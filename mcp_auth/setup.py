@@ -1,11 +1,13 @@
 from fastapi import FastAPI
+
 from .middleware import AuthMiddleware
-from .settings import Settings
-from .providers.registry import register_provider
-from .providers.local import LocalProvider
-from .providers.azure import AzureProvider
 from .providers.aws import AWSProvider
+from .providers.azure import AzureProvider
 from .providers.google import GoogleProvider
+from .providers.local import LocalProvider
+from .providers.registry import register_provider
+from .settings import Settings
+
 
 def setup_auth(app: FastAPI, settings: Settings = None):
     settings = settings or Settings()

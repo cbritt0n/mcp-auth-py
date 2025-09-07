@@ -1,6 +1,6 @@
+from typing import Any, Dict, Optional
 
 from pydantic_settings import BaseSettings
-from typing import Optional, Dict, Any
 
 
 class Settings(BaseSettings):

@@ -10,15 +10,25 @@ if ROOT not in sys.path:
 try:
     import pydantic_settings  # type: ignore
 except Exception:
+
     class BaseSettings:
         """Minimal shim: uses class attributes as defaults and allows overrides via constructor."""
+
         def __init__(self, **kwargs):
             for name, val in self.__class__.__dict__.items():
-                if name.startswith("_") or callable(val) or isinstance(val, (staticmethod, classmethod)):
+                if (
+                    name.startswith("_")
+                    or callable(val)
+                    or isinstance(val, (staticmethod, classmethod))
+                ):
                     continue
                 setattr(self, name, val)
             for k, v in kwargs.items():
                 setattr(self, k, v)
+
     # expose for tests/modules importing BaseSettings from pydantic_settings
     import types
-    sys.modules.setdefault("pydantic_settings", types.SimpleNamespace(BaseSettings=BaseSettings))
+
+    sys.modules.setdefault(
+        "pydantic_settings", types.SimpleNamespace(BaseSettings=BaseSettings)
+    )

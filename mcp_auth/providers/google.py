@@ -1,11 +1,12 @@
 from typing import Optional
 
-from .base import Provider, AuthResult, ProviderError
 from fastapi import Request
 
+from .base import AuthResult, Provider, ProviderError
+
 try:
-    from google.oauth2 import id_token
     from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
 except Exception:  # pragma: no cover - handled at runtime
     id_token = None
     google_requests = None
@@ -47,4 +48,6 @@ class GoogleProvider(Provider):
             raise ProviderError(str(e))
 
         principal = claims.get("sub") or claims.get("email")
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )

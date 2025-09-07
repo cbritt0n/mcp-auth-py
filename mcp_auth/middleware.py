@@ -1,10 +1,12 @@
 from fastapi import Request
+from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from jose import jwt, JWTError
-from .settings import Settings
+
 from .providers import get_provider, register_provider
 from .providers.local import LocalProvider
+from .settings import Settings
+
 
 class AuthMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, settings: Settings):
@@ -26,7 +28,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             result = provider.authenticate(request)
         except Exception as e:
-            return JSONResponse({"error": "Auth error", "detail": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": "Auth error", "detail": str(e)}, status_code=500
+            )
 
         if not result or not result.valid:
             return JSONResponse({"error": "Unauthorized"}, status_code=401)

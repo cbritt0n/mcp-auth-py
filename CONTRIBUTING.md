@@ -47,4 +47,3 @@ pre-commit run ruff --all-files
 	- Type/linters: run `ruff` and address reported issues.
 
 - If hooks fail in CI but pass locally, ensure you used the same Python version and that any generated files (e.g., virtualenv artifacts) are not accidentally committed.
-

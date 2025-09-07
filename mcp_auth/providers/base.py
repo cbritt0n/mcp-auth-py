@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
+
 
 @dataclass
 class AuthResult:
@@ -9,8 +10,10 @@ class AuthResult:
     claims: Optional[Dict[str, Any]] = None
     raw: Optional[Dict[str, Any]] = None
 
+
 class ProviderError(Exception):
     pass
+
 
 class Provider(ABC):
     @abstractmethod

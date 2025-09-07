@@ -1,13 +1,16 @@
 from typing import Optional
-from .base import Provider, AuthResult, ProviderError
-from .oidc import JWKSCache, get_jwks_url_from_well_known
-from jose import jwt, JWTError
+
 from fastapi import Request
+from jose import JWTError, jwt
+
+from .base import AuthResult, Provider, ProviderError
+from .oidc import JWKSCache, get_jwks_url_from_well_known
 
 # Common Cognito well-known URL template (user-provided pool domain or issuer)
 DEFAULT_WELL_KNOWN = None
 
 # AWS-specific adapter stub. Options: Cognito JWT validation, STS, or SigV4 checks.
+
 
 class AWSProvider(Provider):
     def __init__(self, config: Optional[dict] = None):
@@ -47,9 +50,13 @@ class AWSProvider(Provider):
             except Exception:
                 raise ProviderError("boto3 is required for use_cognito_get_user option")
             try:
-                client = boto3.client("cognito-idp", region_name=self.config.get("cognito_region"))
+                client = boto3.client(
+                    "cognito-idp", region_name=self.config.get("cognito_region")
+                )
                 client.get_user(AccessToken=token)
-                return AuthResult(valid=True, principal=None, claims=None, raw={"token": token})
+                return AuthResult(
+                    valid=True, principal=None, claims=None, raw={"token": token}
+                )
             except client.exceptions.NotAuthorizedException:
                 return AuthResult(valid=False)
             except Exception as e:
@@ -58,7 +65,9 @@ class AWSProvider(Provider):
         # Fallback: validate via OIDC JWKS
         well_known = self._build_well_known()
         if not well_known:
-            raise ProviderError("AWSProvider requires 'well_known' or cognito_region+cognito_user_pool_id in config")
+            raise ProviderError(
+                "AWSProvider requires 'well_known' or cognito_region+cognito_user_pool_id in config"
+            )
 
         try:
             cache = self._get_jwks_cache()
@@ -67,11 +76,19 @@ class AWSProvider(Provider):
             jwks = cache.get_jwks()
             audience = self.config.get("audience")
             options = {"verify_aud": bool(audience)}
-            claims = jwt.decode(token, jwks, algorithms=["RS256"], options=options, audience=audience if audience else None)
+            claims = jwt.decode(
+                token,
+                jwks,
+                algorithms=["RS256"],
+                options=options,
+                audience=audience if audience else None,
+            )
         except JWTError:
             return AuthResult(valid=False)
         except Exception as e:
             raise ProviderError(str(e))
 
         principal = claims.get("sub") or claims.get("username")
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )
