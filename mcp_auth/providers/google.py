@@ -8,7 +8,11 @@ try:
     from google.auth.transport import requests as google_requests
     from google.oauth2 import id_token
 except Exception:  # pragma: no cover - handled at runtime
-    id_token = None
+    # provide a minimal shim so tests can monkeypatch id_token.verify_oauth2_token
+    class _IDTokenShim:
+        pass
+
+    id_token = _IDTokenShim()
     google_requests = None
 
 
@@ -23,9 +27,11 @@ class GoogleProvider(Provider):
         self.config = config or {}
 
     def authenticate(self, request: Request) -> AuthResult:
-        if id_token is None or google_requests is None:
+        # If google-auth transport is missing, we still allow testing by
+        # expecting test code to monkeypatch `id_token.verify_oauth2_token`.
+        if google_requests is None and not hasattr(id_token, "verify_oauth2_token"):
             raise ProviderError(
-                "google-auth is required for GoogleProvider; install 'google-auth' (pip install google-auth)"
+                "google-auth is required for GoogleProvider in production; for tests mock id_token.verify_oauth2_token"
             )
 
         auth = request.headers.get("Authorization")
@@ -34,7 +40,8 @@ class GoogleProvider(Provider):
         token = auth.split(" ", 1)[1]
 
         audience = self.config.get("audience")
-        req = google_requests.Request()
+        req = google_requests.Request() if google_requests is not None else None
+
         try:
             # verify_oauth2_token raises ValueError on invalid token
             if audience:
