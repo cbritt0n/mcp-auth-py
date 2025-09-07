@@ -17,6 +17,7 @@ dependencies = [
     "casbin",
     "redis",
     "pydantic-settings",
+    "requests",
     "uvicorn",
 ]
 
@@ -24,3 +25,9 @@ dependencies = [
 Homepage = "https://github.com/cbritt0n/mcp-auth-py"
 Documentation = "https://github.com/cbritt0n/mcp-auth-py"
 Source = "https://github.com/cbritt0n/mcp-auth-py"
+
+[project.optional-dependencies]
+google = ["google-auth"]
+aws = ["boto3"]
+azure = ["msal", "azure-identity"]
+all = ["google-auth", "boto3", "msal", "azure-identity"]
