@@ -2,8 +2,10 @@ pytest
 pytest-mock
 requests
 python-jose
-google-auth
-boto3
-msal
-azure-identity
 pydantic-settings
+
+# dev tools
+pre-commit
+black
+isort
+ruff

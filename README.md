@@ -1,5 +1,7 @@
 # mcp-auth-py
 
+[![CI](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml/badge.svg)](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml)
+
 🔒 mcp-auth-py is a small, framework-friendly library that adds pluggable authentication providers
 for FastAPI (or other ASGI apps). It provides a lightweight middleware and a small provider
 registry so you can swap in authentication backends for Local (JWT), Google, AWS (Cognito),
@@ -20,13 +22,12 @@ Why this project
 
 ## Quickstart (from source)
 
-Clone and install dev deps:
+Clone and install dev deps (recommended):
 
 ```bash
-git clone https://github.com/<your-org>/mcp-auth-py.git
+git clone https://github.com/cbritt0n/mcp-auth-py.git
 cd mcp-auth-py
-python -m pip install -U pip
-python -m pip install -e .[dev]
+./scripts/setup-dev.sh
 ```
 
 Run the example app in `examples/server.py`:
