@@ -18,3 +18,5 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+    # NOTE: small cosmetic comment to trigger CI run; no functional change
