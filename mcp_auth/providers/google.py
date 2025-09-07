@@ -10,7 +10,10 @@ try:
 except Exception:  # pragma: no cover - handled at runtime
     # provide a minimal shim so tests can monkeypatch id_token.verify_oauth2_token
     class _IDTokenShim:
-        pass
+        def verify_oauth2_token(self, token, req, audience):
+            # No-op placeholder for environments without google-auth.
+            # Tests should monkeypatch this function. In production, google-auth should be installed.
+            raise ValueError("google-auth verify_oauth2_token not available; mock in tests or install google-auth")
 
     id_token = _IDTokenShim()
     google_requests = None
