@@ -37,9 +37,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             provider = get_provider(self.settings.auth_provider)
         except LookupError:
-            return JSONResponse(
-                {"error": "Auth provider not found"}, status_code=500
-            )
+            return JSONResponse({"error": "Auth provider not found"}, status_code=500)
 
         # Allow providers to be sync or async
         try:

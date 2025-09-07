@@ -20,9 +20,7 @@ def setup_auth(app: FastAPI, settings: Settings = None):
     if hasattr(settings, "redis_jwks") and settings.redis_jwks:
         provider_cfg.setdefault("redis_jwks", True)
         if hasattr(settings, "redis_url") and settings.redis_url:
-            provider_cfg.setdefault(
-                "redis_url", settings.redis_url
-            )
+            provider_cfg.setdefault("redis_url", settings.redis_url)
 
     register_provider("azure", AzureProvider(provider_cfg))
     register_provider("aws", AWSProvider(provider_cfg))

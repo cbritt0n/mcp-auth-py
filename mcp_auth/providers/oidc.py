@@ -53,7 +53,5 @@ def get_jwks_url_from_well_known(well_known_url: str) -> str:
     resp.raise_for_status()
     jwks_uri = resp.json().get("jwks_uri")
     if not jwks_uri:
-        raise RuntimeError(
-            "jwks_uri not found in well-known config"
-        )
+        raise RuntimeError("jwks_uri not found in well-known config")
     return jwks_uri

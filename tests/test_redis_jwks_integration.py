@@ -9,7 +9,8 @@ def test_redis_jwks_store_and_fetch(monkeypatch, tmp_path):
     fake_client = fakeredis.FakeStrictRedis(server=fake)
 
     # monkeypatch redis.from_url to return our fake client if called
-    import types, sys
+    import sys
+    import types
 
     redis_mod = types.SimpleNamespace(
         from_url=lambda url: fake_client, Redis=lambda **k: fake_client

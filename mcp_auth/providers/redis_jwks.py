@@ -172,6 +172,4 @@ class RedisJWKSCache:
         # fallback: run sync get_jwks in executor
         import asyncio as _asyncio
 
-        return await _asyncio.get_event_loop().run_in_executor(
-            None, self.get_jwks
-        )
+        return await _asyncio.get_event_loop().run_in_executor(None, self.get_jwks)

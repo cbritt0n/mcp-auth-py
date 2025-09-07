@@ -65,9 +65,7 @@ class AWSProvider(Provider):
             try:
                 import boto3
             except Exception:
-                raise ProviderError(
-                    "boto3 is required for use_cognito_get_user option"
-                )
+                raise ProviderError("boto3 is required for use_cognito_get_user option")
 
             # run blocking boto3 calls in threadpool to avoid blocking event loop
             def _call_get_user():
@@ -105,9 +103,7 @@ class AWSProvider(Provider):
         try:
             cache = self._get_jwks_cache()
             if not cache:
-                raise ProviderError(
-                    "No JWKS configuration available for AWSProvider"
-                )
+                raise ProviderError("No JWKS configuration available for AWSProvider")
             # prefer async JWKS fetch, fall back to running sync fetch in threadpool
             if hasattr(cache, "get_jwks_async"):
                 jwks = await cache.get_jwks_async()

@@ -34,9 +34,7 @@ class AzureProvider(Provider):
         # first
         if self.config.get("use_msal_introspect"):
             if msal is None:
-                raise ProviderError(
-                    "msal is required for use_msal_introspect option"
-                )
+                raise ProviderError("msal is required for use_msal_introspect option")
             # MSAL doesn't provide a direct introspect endpoint helper; fall
             # back to OIDC if not implemented
 
