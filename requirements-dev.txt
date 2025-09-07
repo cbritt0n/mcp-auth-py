@@ -3,6 +3,7 @@ pytest-mock
 requests
 python-jose
 pydantic-settings
+fastapi
 
 # dev tools
 pre-commit
