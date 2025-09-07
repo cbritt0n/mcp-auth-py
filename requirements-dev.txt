@@ -4,6 +4,7 @@ requests
 python-jose
 pydantic-settings
 fastapi
+httpx
 
 # dev tools
 pre-commit
