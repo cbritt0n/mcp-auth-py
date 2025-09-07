@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi import Request
 from jose import JWTError, jwt
 
 from .base import AuthResult, Provider, ProviderError
@@ -8,7 +7,6 @@ from .oidc import JWKSCache, get_jwks_url_from_well_known
 
 try:
     import msal
-    from azure.identity import DefaultAzureCredential
 except Exception:
     msal = None
 

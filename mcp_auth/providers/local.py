@@ -3,7 +3,7 @@ from jose import JWTError, jwt
 
 from mcp_auth.settings import Settings
 
-from .base import AuthResult, Provider, ProviderError
+from .base import AuthResult, Provider
 
 
 class LocalProvider(Provider):

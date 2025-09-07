@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi import Request
 from jose import JWTError, jwt
 
 from .base import AuthResult, Provider, ProviderError

@@ -1,5 +1,4 @@
 from fastapi import Request
-from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 

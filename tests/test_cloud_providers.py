@@ -1,8 +1,6 @@
 import sys
 import types
 
-import pytest
-
 
 class DummyRequest:
     def __init__(self, auth_header=None):
