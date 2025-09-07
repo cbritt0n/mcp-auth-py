@@ -121,6 +121,43 @@ commit SHA.
   using Redis or another shared cache.
 - The code includes small shims so tests and local development work without installing every cloud SDK.
 
+## Async support & production readiness
+
+Async support
+- The middleware and providers are async-capable. Providers may implement `authenticate` as a
+    coroutine or return a synchronous result — the middleware will `await` coroutine results. For
+    providers that rely on blocking SDKs (for example `boto3`), the code uses a threadpool
+    (`loop.run_in_executor`) to avoid blocking the event loop.
+- If you want fully non-blocking behavior, enable async-capable dependencies where available
+    (for example `httpx` for async JWKS fetches and `aioredis` for async Redis access).
+
+Production checklist
+- Use a shared JWKS cache for multi-process deployments: enable the `redis_jwks` adapter and
+    set `redis_url` in `Settings` or the provider config to point at a Redis cluster or managed
+    service. This reduces network calls and centralizes JWKS TTL handling.
+- Install provider SDKs you need in production (for example `boto3`, `google-auth`, `msal`,
+    `azure-identity`) rather than relying on the test/dev shims.
+- Pin pre-commit hook revisions in `.pre-commit-config.yaml` (already done) and run
+    `pre-commit run --all-files` locally before pushing to avoid CI hook modifications.
+- Run the app under a production ASGI server (Uvicorn/Gunicorn with workers) and use TLS
+    termination at the edge (load balancer or reverse proxy).
+- Configure sensible timeouts and connection pools for SDKs and Redis. Monitor cache hit rates
+    and JWKS fetches to detect Key Rotation events.
+- Rotate secrets/keys and configure alerting for signature verification failures and repeated
+    JWKS fetch errors.
+
+Quick commands
+```bash
+# install optional redis_jwks extras
+pip install .[redis_jwks]
+
+# run pre-commit locally before pushing
+pre-commit run --all-files
+
+# run tests
+pytest -q
+```
+
 ## Contributing
 See `CONTRIBUTING.md` for guidelines on adding providers, tests, and style.
 
