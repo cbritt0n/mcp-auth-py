@@ -14,9 +14,11 @@ except Exception:  # pragma: no cover - handled at runtime
     class _IDTokenShim:
         def verify_oauth2_token(self, token, req, audience):
             # No-op placeholder for environments without google-auth.
-            # Tests should monkeypatch this function. In production, google-auth should be installed.
+            # Tests should monkeypatch this function. In production,
+            # google-auth should be installed.
             raise ValueError(
-                "google-auth verify_oauth2_token not available; mock in tests or install google-auth"
+                "google-auth verify_oauth2_token not available; "
+                "mock in tests or install google-auth"
             )
 
     id_token = _IDTokenShim()
@@ -26,8 +28,9 @@ except Exception:  # pragma: no cover - handled at runtime
 class GoogleProvider(Provider):
     """Google provider that verifies Google ID tokens using google-auth.
 
-    Config options:
-      - audience: optional expected audience (client ID). If omitted, audience is not enforced.
+        Config options:
+            - audience: optional expected audience (client ID). If omitted, the
+                audience is not enforced.
     """
 
     def __init__(self, config: Optional[dict] = None):
@@ -36,9 +39,12 @@ class GoogleProvider(Provider):
     def authenticate(self, request: Request) -> AuthResult:
         # If google-auth transport is missing, we still allow testing by
         # expecting test code to monkeypatch `id_token.verify_oauth2_token`.
-        if google_requests is None and not hasattr(id_token, "verify_oauth2_token"):
+        if google_requests is None and not hasattr(
+            id_token, "verify_oauth2_token"
+        ):
             raise ProviderError(
-                "google-auth is required for GoogleProvider in production; for tests mock id_token.verify_oauth2_token"
+                "google-auth is required for GoogleProvider in production; "
+                "for tests mock id_token.verify_oauth2_token"
             )
 
         auth = request.headers.get("Authorization")
@@ -69,4 +75,6 @@ class GoogleProvider(Provider):
             email=claims.get("email"),
             raw=claims,
         )
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )

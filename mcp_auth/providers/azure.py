@@ -14,7 +14,8 @@ except Exception:
 
 # Default well-known URL template for Azure AD
 AZURE_WELL_KNOWN = (
-    "https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration"
+    "https://login.microsoftonline.com/{tenant}/v2.0/"
+    ".well-known/openid-configuration"
 )
 
 
@@ -29,11 +30,15 @@ class AzureProvider(Provider):
             return AuthResult(valid=False)
         token = auth.split(" ", 1)[1]
 
-        # If configured to attempt MSAL introspection or SDK checks, try those first
+        # If configured to attempt MSAL introspection or SDK checks, try those
+        # first
         if self.config.get("use_msal_introspect"):
             if msal is None:
-                raise ProviderError("msal is required for use_msal_introspect option")
-            # MSAL doesn't provide a direct introspect endpoint helper; fall back to OIDC if not implemented
+                raise ProviderError(
+                    "msal is required for use_msal_introspect option"
+                )
+            # MSAL doesn't provide a direct introspect endpoint helper; fall
+            # back to OIDC if not implemented
 
         tenant = self.config.get("tenant") or "common"
         well_known = self.config.get("well_known") or AZURE_WELL_KNOWN.format(
@@ -46,7 +51,9 @@ class AzureProvider(Provider):
                     try:
                         from .redis_jwks import RedisJWKSCache
 
-                        self._jwks_cache = RedisJWKSCache(jwks_url, redis_url=self.config.get("redis_url"))
+                        self._jwks_cache = RedisJWKSCache(
+                            jwks_url, redis_url=self.config.get("redis_url")
+                        )
                     except Exception:
                         self._jwks_cache = JWKSCache(jwks_url)
                 else:
@@ -56,7 +63,9 @@ class AzureProvider(Provider):
             else:
                 import asyncio as _asyncio
 
-                jwks = await _asyncio.get_event_loop().run_in_executor(None, self._jwks_cache.get_jwks)
+                jwks = await _asyncio.get_event_loop().run_in_executor(
+                    None, self._jwks_cache.get_jwks
+                )
             audience = self.config.get("audience")
             options = {"verify_aud": bool(audience)}
             claims = jwt.decode(
@@ -72,5 +81,9 @@ class AzureProvider(Provider):
             raise ProviderError(str(e))
 
         principal_id = claims.get("sub") or claims.get("upn") or claims.get("oid")
-        principal = Principal(id=str(principal_id), provider="azure", name=claims.get("name"), raw=claims)
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        principal = Principal(
+            id=str(principal_id), provider="azure", name=claims.get("name"), raw=claims
+        )
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )

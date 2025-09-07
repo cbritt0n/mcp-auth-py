@@ -24,9 +24,10 @@ class ProviderError(Exception):
 class Provider(ABC):
     @abstractmethod
     def authenticate(self, request) -> AuthResult:
-        """Authenticate an incoming request and return AuthResult or raise ProviderError.
+        """Authenticate an incoming request and return AuthResult or raise
+        ProviderError.
 
-        Implementations may be synchronous or asynchronous (returning a coroutine). The
-        middleware will await coroutine results.
+        Implementations may be synchronous or asynchronous (returning a
+        coroutine). The middleware will await coroutine results.
         """
         raise NotImplementedError()

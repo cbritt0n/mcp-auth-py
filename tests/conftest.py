@@ -11,7 +11,9 @@ if ROOT not in sys.path:
 if importlib.util.find_spec("pydantic_settings") is None:
 
     class BaseSettings:
-        """Minimal shim: uses class attributes as defaults and allows overrides via constructor."""
+        """Minimal shim: uses class attributes as defaults and allows
+        overrides via constructor.
+        """
 
         def __init__(self, **kwargs):
             for name, val in self.__class__.__dict__.items():

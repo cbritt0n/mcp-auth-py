@@ -11,7 +11,9 @@ def test_redis_jwks_store_and_fetch(monkeypatch, tmp_path):
     # monkeypatch redis.from_url to return our fake client if called
     import types, sys
 
-    redis_mod = types.SimpleNamespace(from_url=lambda url: fake_client, Redis=lambda **k: fake_client)
+    redis_mod = types.SimpleNamespace(
+        from_url=lambda url: fake_client, Redis=lambda **k: fake_client
+    )
     monkeypatch.setitem(sys.modules, "redis", redis_mod)
 
     from mcp_auth.providers.redis_jwks import RedisJWKSCache
@@ -36,7 +38,11 @@ def test_redis_jwks_store_and_fetch(monkeypatch, tmp_path):
 
     monkeypatch.setattr(requests, "get", fake_get)
 
-    adapter = RedisJWKSCache("https://example.com/.well-known/jwks.json", ttl=10, redis_url="redis://fake")
+    adapter = RedisJWKSCache(
+        "https://example.com/.well-known/jwks.json",
+        ttl=10,
+        redis_url="redis://fake",
+    )
 
     jwks = adapter.get_jwks()
     assert jwks == jwks_data

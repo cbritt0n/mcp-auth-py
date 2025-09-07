@@ -26,9 +26,10 @@ class JWKSCache:
         return self._keys
 
     async def get_jwks_async(self):
-        """Async JWKS fetch using httpx if available; otherwise falls back to sync fetch in threadpool.
+        """Async JWKS fetch using httpx if available.
 
-        This lets async providers avoid blocking the event loop.
+        Otherwise falls back to sync fetch in a threadpool to avoid blocking
+        the event loop for async callers.
         """
         if httpx is None:
             # fallback: run blocking call in threadpool
@@ -52,5 +53,7 @@ def get_jwks_url_from_well_known(well_known_url: str) -> str:
     resp.raise_for_status()
     jwks_uri = resp.json().get("jwks_uri")
     if not jwks_uri:
-        raise RuntimeError("jwks_uri not found in well-known config")
+        raise RuntimeError(
+            "jwks_uri not found in well-known config"
+        )
     return jwks_uri

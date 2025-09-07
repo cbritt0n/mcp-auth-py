@@ -26,7 +26,10 @@ class AWSProvider(Provider):
         region = self.config.get("cognito_region")
         pool = self.config.get("cognito_user_pool_id")
         if region and pool:
-            return f"https://cognito-idp.{region}.amazonaws.com/{pool}/.well-known/openid-configuration"
+            return (
+                f"https://cognito-idp.{region}.amazonaws.com/{pool}/"
+                ".well-known/openid-configuration"
+            )
         return None
 
     def _get_jwks_cache(self) -> Optional[JWKSCache]:
@@ -41,7 +44,9 @@ class AWSProvider(Provider):
             try:
                 from .redis_jwks import RedisJWKSCache
 
-                self._jwks_cache = RedisJWKSCache(jwks_url, redis_url=self.config.get("redis_url"))
+                self._jwks_cache = RedisJWKSCache(
+                    jwks_url, redis_url=self.config.get("redis_url")
+                )
             except Exception:
                 # fallback to default cache if redis adapter unavailable
                 self._jwks_cache = JWKSCache(jwks_url)
@@ -60,21 +65,29 @@ class AWSProvider(Provider):
             try:
                 import boto3
             except Exception:
-                raise ProviderError("boto3 is required for use_cognito_get_user option")
+                raise ProviderError(
+                    "boto3 is required for use_cognito_get_user option"
+                )
 
             # run blocking boto3 calls in threadpool to avoid blocking event loop
             def _call_get_user():
                 client = boto3.client(
-                    "cognito-idp", region_name=self.config.get("cognito_region")
+                    "cognito-idp",
+                    region_name=self.config.get("cognito_region"),
                 )
                 return client.get_user(AccessToken=token)
 
             loop = asyncio.get_event_loop()
             try:
                 await loop.run_in_executor(None, _call_get_user)
-                # get_user does not return claims in this flow; construct a minimal principal
-                principal = Principal(id="cognito-user", provider="aws", raw={"token": token})
-                return AuthResult(valid=True, principal=principal, claims=None, raw={"token": token})
+                # get_user does not return claims in this flow; construct a minimal
+                # principal
+                principal = Principal(
+                    id="cognito-user", provider="aws", raw={"token": token}
+                )
+                return AuthResult(
+                    valid=True, principal=principal, claims=None, raw={"token": token}
+                )
             except Exception as e:
                 # handle NotAuthorizedException by name to avoid import coupling
                 if e.__class__.__name__ == "NotAuthorizedException":
@@ -85,19 +98,23 @@ class AWSProvider(Provider):
         well_known = self._build_well_known()
         if not well_known:
             raise ProviderError(
-                "AWSProvider requires 'well_known' or cognito_region+cognito_user_pool_id in config"
+                "AWSProvider requires 'well_known' or "
+                "cognito_region+cognito_user_pool_id in config"
             )
 
         try:
             cache = self._get_jwks_cache()
             if not cache:
-                raise ProviderError("No JWKS configuration available for AWSProvider")
+                raise ProviderError(
+                    "No JWKS configuration available for AWSProvider"
+                )
             # prefer async JWKS fetch, fall back to running sync fetch in threadpool
             if hasattr(cache, "get_jwks_async"):
                 jwks = await cache.get_jwks_async()
             else:
                 loop = asyncio.get_event_loop()
                 jwks = await loop.run_in_executor(None, cache.get_jwks)
+
             audience = self.config.get("audience")
             options = {"verify_aud": bool(audience)}
             claims = jwt.decode(
@@ -105,7 +122,7 @@ class AWSProvider(Provider):
                 jwks,
                 algorithms=["RS256"],
                 options=options,
-                audience=audience if audience else None,
+                audience=(audience if audience else None),
             )
         except JWTError:
             return AuthResult(valid=False)
@@ -113,5 +130,9 @@ class AWSProvider(Provider):
             raise ProviderError(str(e))
 
         principal_id = claims.get("sub") or claims.get("username")
-        principal = Principal(id=str(principal_id), provider="aws", name=claims.get("name"), raw=claims)
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        principal = Principal(
+            id=str(principal_id), provider="aws", name=claims.get("name"), raw=claims
+        )
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )

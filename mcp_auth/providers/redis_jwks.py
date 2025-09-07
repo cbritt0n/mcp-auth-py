@@ -35,7 +35,13 @@ class RedisJWKSCache:
     network fetches and executing them in a threadpool for async callers.
     """
 
-    def __init__(self, url: str, ttl: int = 3600, redis_url: str = "redis://localhost:6379/0", namespace: str = "mcp:jwks"):
+    def __init__(
+        self,
+        url: str,
+        ttl: int = 3600,
+        redis_url: str = "redis://localhost:6379/0",
+        namespace: str = "mcp:jwks",
+    ):
         self.url = url
         self.ttl = ttl
         self.redis_url = redis_url
@@ -139,14 +145,17 @@ class RedisJWKSCache:
 
                     # fetch JWKS via async HTTP client if available
                     if httpx is not None:
-                        resp = await httpx.AsyncClient().get(self.url, timeout=5)
+                        client = httpx.AsyncClient()
+                        resp = await client.get(self.url, timeout=5)
                         resp.raise_for_status()
                         jwks = resp.json()
                     else:
                         # fall back to sync fetch in threadpool
                         import asyncio as _asyncio
 
-                        jwks = await _asyncio.get_event_loop().run_in_executor(None, self.get_jwks)
+                        jwks = await _asyncio.get_event_loop().run_in_executor(
+                            None, self.get_jwks
+                        )
 
                     try:
                         await aclient.set(key, json.dumps(jwks), ex=self.ttl)
@@ -163,4 +172,6 @@ class RedisJWKSCache:
         # fallback: run sync get_jwks in executor
         import asyncio as _asyncio
 
-        return await _asyncio.get_event_loop().run_in_executor(None, self.get_jwks)
+        return await _asyncio.get_event_loop().run_in_executor(
+            None, self.get_jwks
+        )

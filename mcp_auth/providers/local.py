@@ -26,6 +26,12 @@ class LocalProvider(Provider):
             return AuthResult(valid=False)
         principal_id = claims.get("sub") or claims.get("email")
         principal = Principal(
-            id=str(principal_id), provider="local", name=claims.get("name"), email=claims.get("email"), raw=claims
+            id=str(principal_id),
+            provider="local",
+            name=claims.get("name"),
+            email=claims.get("email"),
+            raw=claims,
         )
-        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
+        return AuthResult(
+            valid=True, principal=principal, claims=claims, raw={"token": token}
+        )

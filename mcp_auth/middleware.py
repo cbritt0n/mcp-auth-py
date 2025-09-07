@@ -37,7 +37,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             provider = get_provider(self.settings.auth_provider)
         except LookupError:
-            return JSONResponse({"error": "Auth provider not found"}, status_code=500)
+            return JSONResponse(
+                {"error": "Auth provider not found"}, status_code=500
+            )
 
         # Allow providers to be sync or async
         try:
@@ -46,12 +48,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if hasattr(result, "__await__"):
                 result = await result
         except Exception as e:
-            return JSONResponse({"error": "Auth error", "detail": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": "Auth error", "detail": str(e)},
+                status_code=500,
+            )
 
         if not result or not result.valid:
             return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
-        # attach structured principal and raw claims to request state for downstream apps
+        # attach structured principal and raw claims to request.state
         request.state.principal = result.principal
         request.state.claims = result.claims or {}
         return await call_next(request)
