@@ -7,9 +7,9 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 # Minimal BaseSettings shim for tests when 'pydantic-settings' is not installed.
-try:
-    import pydantic_settings  # type: ignore
-except Exception:
+import importlib.util
+
+if importlib.util.find_spec("pydantic_settings") is None:
 
     class BaseSettings:
         """Minimal shim: uses class attributes as defaults and allows overrides via constructor."""
