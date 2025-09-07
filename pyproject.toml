@@ -21,6 +21,6 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourname/mcp-auth-py"
-Documentation = "https://github.com/yourname/mcp-auth-py"
-Source = "https://github.com/yourname/mcp-auth-py"
+Homepage = "https://github.com/cbritt0n/mcp-auth-py"
+Documentation = "https://github.com/cbritt0n/mcp-auth-py"
+Source = "https://github.com/cbritt0n/mcp-auth-py"
