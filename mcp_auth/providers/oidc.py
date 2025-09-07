@@ -1,6 +1,5 @@
 import time
 import requests
-from jose import jwk, JWTError
 
 class JWKSCache:
     def __init__(self, url: str, ttl: int = 3600):

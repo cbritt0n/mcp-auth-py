@@ -6,3 +6,4 @@ google-auth
 boto3
 msal
 azure-identity
+pydantic-settings
