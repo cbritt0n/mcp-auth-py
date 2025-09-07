@@ -1,6 +1,9 @@
+import asyncio
 from typing import Optional
 
 from jose import JWTError, jwt
+
+from mcp_auth.models import Principal
 
 from .base import AuthResult, Provider, ProviderError
 from .oidc import JWKSCache, get_jwks_url_from_well_known
@@ -36,7 +39,7 @@ class AWSProvider(Provider):
         self._jwks_cache = JWKSCache(jwks_url)
         return self._jwks_cache
 
-    def authenticate(self, request) -> AuthResult:
+    async def authenticate(self, request) -> AuthResult:
         auth = request.headers.get("Authorization")
         if not auth or not auth.startswith("Bearer "):
             return AuthResult(valid=False)
@@ -48,17 +51,24 @@ class AWSProvider(Provider):
                 import boto3
             except Exception:
                 raise ProviderError("boto3 is required for use_cognito_get_user option")
-            try:
+
+            # run blocking boto3 calls in threadpool to avoid blocking event loop
+            def _call_get_user():
                 client = boto3.client(
                     "cognito-idp", region_name=self.config.get("cognito_region")
                 )
-                client.get_user(AccessToken=token)
-                return AuthResult(
-                    valid=True, principal=None, claims=None, raw={"token": token}
-                )
-            except client.exceptions.NotAuthorizedException:
-                return AuthResult(valid=False)
+                return client.get_user(AccessToken=token)
+
+            loop = asyncio.get_event_loop()
+            try:
+                await loop.run_in_executor(None, _call_get_user)
+                # get_user does not return claims in this flow; construct a minimal principal
+                principal = Principal(id="cognito-user", provider="aws", raw={"token": token})
+                return AuthResult(valid=True, principal=principal, claims=None, raw={"token": token})
             except Exception as e:
+                # handle NotAuthorizedException by name to avoid import coupling
+                if e.__class__.__name__ == "NotAuthorizedException":
+                    return AuthResult(valid=False)
                 raise ProviderError(str(e))
 
         # Fallback: validate via OIDC JWKS
@@ -72,7 +82,12 @@ class AWSProvider(Provider):
             cache = self._get_jwks_cache()
             if not cache:
                 raise ProviderError("No JWKS configuration available for AWSProvider")
-            jwks = cache.get_jwks()
+            # prefer async JWKS fetch, fall back to running sync fetch in threadpool
+            if hasattr(cache, "get_jwks_async"):
+                jwks = await cache.get_jwks_async()
+            else:
+                loop = asyncio.get_event_loop()
+                jwks = await loop.run_in_executor(None, cache.get_jwks)
             audience = self.config.get("audience")
             options = {"verify_aud": bool(audience)}
             claims = jwt.decode(
@@ -87,7 +102,6 @@ class AWSProvider(Provider):
         except Exception as e:
             raise ProviderError(str(e))
 
-        principal = claims.get("sub") or claims.get("username")
-        return AuthResult(
-            valid=True, principal=principal, claims=claims, raw={"token": token}
-        )
+        principal_id = claims.get("sub") or claims.get("username")
+        principal = Principal(id=str(principal_id), provider="aws", name=claims.get("name"), raw=claims)
+        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})

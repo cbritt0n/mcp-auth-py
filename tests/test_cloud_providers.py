@@ -29,7 +29,7 @@ def test_google_provider_valid(monkeypatch):
     req = DummyRequest("Bearer good-token")
     res = provider.authenticate(req)
     assert res.valid is True
-    assert res.principal == "google-user"
+    assert res.principal.id == "google-user"
 
 
 def test_google_provider_invalid(monkeypatch):
@@ -75,10 +75,12 @@ def test_aws_provider_jwks(monkeypatch):
         lambda token, jwks, algorithms, options, audience=None: {"sub": "aws-user"},
     )
 
+    import asyncio
+
     req = DummyRequest("Bearer token")
-    res = provider.authenticate(req)
+    res = asyncio.run(provider.authenticate(req))
     assert res.valid is True
-    assert res.principal == "aws-user"
+    assert res.principal.id == "aws-user"
 
 
 def test_aws_provider_cognito_get_user(monkeypatch):
@@ -108,13 +110,15 @@ def test_aws_provider_cognito_get_user(monkeypatch):
     fake_boto3 = types.SimpleNamespace(client=fake_client)
     monkeypatch.setitem(sys.modules, "boto3", fake_boto3)
 
+    import asyncio
+
     req = DummyRequest("Bearer token")
-    res = provider.authenticate(req)
+    res = asyncio.run(provider.authenticate(req))
     assert res.valid is True
 
     # unauthorized token
     req2 = DummyRequest("Bearer bad")
-    res2 = provider.authenticate(req2)
+    res2 = asyncio.run(provider.authenticate(req2))
     assert res2.valid is False
 
 
@@ -134,7 +138,9 @@ def test_azure_provider_jwks(monkeypatch):
         lambda token, jwks, algorithms, options, audience=None: {"sub": "azure-user"},
     )
 
+    import asyncio
+
     req = DummyRequest("Bearer token")
-    res = provider.authenticate(req)
+    res = asyncio.run(provider.authenticate(req))
     assert res.valid is True
-    assert res.principal == "azure-user"
+    assert res.principal.id == "azure-user"

@@ -2,24 +2,31 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from ..models import Principal
+
 
 @dataclass
 class AuthResult:
     valid: bool
-    principal: Optional[str] = None
+    principal: Optional[Principal] = None
     claims: Optional[Dict[str, Any]] = None
     raw: Optional[Dict[str, Any]] = None
 
 
 class ProviderError(Exception):
-    pass
+    """Provider-specific error with optional machine-readable code."""
+
+    def __init__(self, message: str, code: Optional[str] = None):
+        super().__init__(message)
+        self.code = code
 
 
 class Provider(ABC):
     @abstractmethod
     def authenticate(self, request) -> AuthResult:
-        """Authenticate an incoming request and return AuthResult.
+        """Authenticate an incoming request and return AuthResult or raise ProviderError.
 
-        Raise ProviderError for configuration or network errors.
+        Implementations may be synchronous or asynchronous (returning a coroutine). The
+        middleware will await coroutine results.
         """
         raise NotImplementedError()

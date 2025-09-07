@@ -1,6 +1,7 @@
 from fastapi import Request
 from jose import JWTError, jwt
 
+from mcp_auth.models import Principal
 from mcp_auth.settings import Settings
 
 from .base import AuthResult, Provider
@@ -23,7 +24,8 @@ class LocalProvider(Provider):
             )
         except JWTError:
             return AuthResult(valid=False)
-        principal = claims.get("sub") or claims.get("email")
-        return AuthResult(
-            valid=True, principal=principal, claims=claims, raw={"token": token}
+        principal_id = claims.get("sub") or claims.get("email")
+        principal = Principal(
+            id=str(principal_id), provider="local", name=claims.get("name"), email=claims.get("email"), raw=claims
         )
+        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})

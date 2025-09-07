@@ -2,6 +2,8 @@ from typing import Optional
 
 from jose import JWTError, jwt
 
+from mcp_auth.models import Principal
+
 from .base import AuthResult, Provider, ProviderError
 from .oidc import JWKSCache, get_jwks_url_from_well_known
 
@@ -21,7 +23,7 @@ class AzureProvider(Provider):
         self.config = config or {}
         self._jwks_cache = None
 
-    def authenticate(self, request) -> AuthResult:
+    async def authenticate(self, request) -> AuthResult:
         auth = request.headers.get("Authorization")
         if not auth or not auth.startswith("Bearer "):
             return AuthResult(valid=False)
@@ -41,7 +43,12 @@ class AzureProvider(Provider):
             if not self._jwks_cache:
                 jwks_url = get_jwks_url_from_well_known(well_known)
                 self._jwks_cache = JWKSCache(jwks_url)
-            jwks = self._jwks_cache.get_jwks()
+            if hasattr(self._jwks_cache, "get_jwks_async"):
+                jwks = await self._jwks_cache.get_jwks_async()
+            else:
+                import asyncio as _asyncio
+
+                jwks = await _asyncio.get_event_loop().run_in_executor(None, self._jwks_cache.get_jwks)
             audience = self.config.get("audience")
             options = {"verify_aud": bool(audience)}
             claims = jwt.decode(
@@ -56,7 +63,6 @@ class AzureProvider(Provider):
         except Exception as e:
             raise ProviderError(str(e))
 
-        principal = claims.get("sub") or claims.get("upn") or claims.get("oid")
-        return AuthResult(
-            valid=True, principal=principal, claims=claims, raw={"token": token}
-        )
+        principal_id = claims.get("sub") or claims.get("upn") or claims.get("oid")
+        principal = Principal(id=str(principal_id), provider="azure", name=claims.get("name"), raw=claims)
+        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})

@@ -2,6 +2,8 @@ from typing import Optional
 
 from fastapi import Request
 
+from mcp_auth.models import Principal
+
 from .base import AuthResult, Provider, ProviderError
 
 try:
@@ -59,7 +61,12 @@ class GoogleProvider(Provider):
         except Exception as e:
             raise ProviderError(str(e))
 
-        principal = claims.get("sub") or claims.get("email")
-        return AuthResult(
-            valid=True, principal=principal, claims=claims, raw={"token": token}
+        principal_id = claims.get("sub") or claims.get("email")
+        principal = Principal(
+            id=str(principal_id),
+            provider="google",
+            name=claims.get("name"),
+            email=claims.get("email"),
+            raw=claims,
         )
+        return AuthResult(valid=True, principal=principal, claims=claims, raw={"token": token})
