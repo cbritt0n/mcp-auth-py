@@ -59,7 +59,9 @@ async def token_to_principal(provider: Provider, token: str) -> Optional[Princip
     Returns Principal on success or None.
     """
     req = _RequestLike(
-        headers={"Authorization": f"Bearer {token}"}, cookies={}, query_params={}
+        headers={"Authorization": f"Bearer {token}"},
+        cookies={},
+        query_params={},
     )
     result = await authenticate_request(provider, req)
     if result and result.valid:
