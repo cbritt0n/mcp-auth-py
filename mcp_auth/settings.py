@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     auth_provider: str = "local"
     # provider specific configuration (optional)
     provider_config: Optional[Dict[str, Any]] = None
+    # optional Redis JWKS settings
+    redis_jwks: bool = False
+    redis_url: Optional[str] = None
 
     class Config:
         env_file = ".env"

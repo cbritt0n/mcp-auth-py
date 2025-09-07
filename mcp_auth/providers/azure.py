@@ -42,7 +42,15 @@ class AzureProvider(Provider):
         try:
             if not self._jwks_cache:
                 jwks_url = get_jwks_url_from_well_known(well_known)
-                self._jwks_cache = JWKSCache(jwks_url)
+                if self.config.get("redis_jwks"):
+                    try:
+                        from .redis_jwks import RedisJWKSCache
+
+                        self._jwks_cache = RedisJWKSCache(jwks_url, redis_url=self.config.get("redis_url"))
+                    except Exception:
+                        self._jwks_cache = JWKSCache(jwks_url)
+                else:
+                    self._jwks_cache = JWKSCache(jwks_url)
             if hasattr(self._jwks_cache, "get_jwks_async"):
                 jwks = await self._jwks_cache.get_jwks_async()
             else:

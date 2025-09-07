@@ -36,7 +36,17 @@ class AWSProvider(Provider):
         if not well_known:
             return None
         jwks_url = get_jwks_url_from_well_known(well_known)
-        self._jwks_cache = JWKSCache(jwks_url)
+        # allow using Redis-backed adapter via config
+        if self.config.get("redis_jwks"):
+            try:
+                from .redis_jwks import RedisJWKSCache
+
+                self._jwks_cache = RedisJWKSCache(jwks_url, redis_url=self.config.get("redis_url"))
+            except Exception:
+                # fallback to default cache if redis adapter unavailable
+                self._jwks_cache = JWKSCache(jwks_url)
+        else:
+            self._jwks_cache = JWKSCache(jwks_url)
         return self._jwks_cache
 
     async def authenticate(self, request) -> AuthResult:

@@ -47,6 +47,8 @@ jobs:
           python -m pip install --upgrade pip
           # install provider SDKs directly to avoid building the package wheel (hatchling)
           pip install google-auth boto3 msal azure-identity
+          # install redis/jwks runtime deps for provider integration tests
+          pip install redis aioredis httpx
           pip install -r requirements-dev.txt
       - name: Run provider integration tests
         run: pytest tests/test_cloud_providers.py -q

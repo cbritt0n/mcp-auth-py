@@ -110,6 +110,12 @@ pip install .[azure]
 The CI workflow installs these SDKs directly before running provider integration tests to avoid building the
 project wheel in CI.
 
+CI notes
+
+The repository pins pre-commit hooks (including `ruff-pre-commit`) to a specific rev to avoid intermittent
+checkout failures in CI. If you update `.pre-commit-config.yaml`, ensure the `rev` points to a stable tag or
+commit SHA.
+
 ## Development notes
 - Providers cache JWKS per provider instance to reduce network calls. For cross-process sharing, consider
   using Redis or another shared cache.
@@ -176,6 +182,32 @@ settings = Settings(
     }
 )
 app = setup_auth(app, settings=settings)
+```
+
+Using Redis-backed JWKS cache
+
+For high-scale MCP deployments you may want a shared JWKS cache. Install the optional redis_jwks extra and
+enable the adapter via provider config:
+
+```bash
+pip install .[redis_jwks]
+```
+
+Example (enable Redis JWKS for AWS provider):
+
+```python
+from mcp_auth.providers.aws import AWSProvider
+
+provider = AWSProvider({
+    "cognito_region": "us-west-2",
+    "cognito_user_pool_id": "us-west-2_XXXX",
+    "redis_jwks": True,
+    "redis_url": "redis://redis.example.local:6379/0",
+})
+```
+
+The adapter is optional: when `redis_jwks` is unset or the redis adapter isn't available the providers fall back
+to the default in-process JWKS cache.
 ```
 
 Environment variables are supported via `pydantic-settings` (see `Settings.Config.env_file`).
