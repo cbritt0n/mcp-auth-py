@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import sys
 
@@ -7,8 +8,6 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 # Minimal BaseSettings shim for tests when 'pydantic-settings' is not installed.
-import importlib.util
-
 if importlib.util.find_spec("pydantic_settings") is None:
 
     class BaseSettings:
