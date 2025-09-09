@@ -18,8 +18,6 @@ TL;DR: Pluggable auth for FastAPI/ASGI — swap providers (local/google/aws/azur
 
 # mcp-auth-py — pluggable auth for ASGI apps (FastAPI-friendly)
 
-[![CI](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml/badge.svg)](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml)
-
 Quick pitch — why mcp-auth-py?
 - Plug-and-play providers: swap `local`, `google`, `aws` (Cognito), or `azure` without changing app code.
 - Cloud-aware: supports Google ID tokens, AWS Cognito OIDC, and Azure AD OIDC out of the box.
