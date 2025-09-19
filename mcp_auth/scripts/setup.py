@@ -45,7 +45,12 @@ def setup_local():
     
     print("\n🎯 Local setup complete!")
     print("Test token generation:")
-    print(f"python -c \"import jwt; print(jwt.encode({{'sub': 'test-user', 'name': 'Test User'}}, '{jwt_secret}', algorithm='HS256'))\"")
+    token_cmd = (
+        f"python -c \"import jwt; "
+        f"print(jwt.encode({{'sub': 'test-user', 'name': 'Test User'}}, "
+        f"'{jwt_secret}', algorithm='HS256'))\""
+    )
+    print(token_cmd)
 
 
 def setup_google():
