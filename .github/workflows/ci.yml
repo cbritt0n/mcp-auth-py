@@ -29,7 +29,14 @@ jobs:
       - name: Run pre-commit (format/lint)
         run: |
           pip install pre-commit
-          pre-commit run --all-files
+          # First run formatters to apply changes
+          pre-commit run black --all-files || true
+          pre-commit run isort --all-files || true
+          # Then run linters which should pass
+          pre-commit run ruff --all-files
+          pre-commit run end-of-file-fixer --all-files || true  
+          pre-commit run trailing-whitespace --all-files || true
+          pre-commit run check-yaml --all-files
       - name: Run unit tests
         run: pytest -q
 

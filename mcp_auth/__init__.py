@@ -10,7 +10,7 @@ from .providers import get_provider, register_provider
 
 __all__ = [
     "Principal",
-    "Settings", 
+    "Settings",
     "setup_auth",
     "get_provider",
     "register_provider",
