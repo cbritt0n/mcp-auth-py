@@ -5,30 +5,73 @@ build-backend = "hatchling.build"
 [project]
 name = "mcp-auth-py"
 version = "0.1.0"
-description = "Plug-and-play authentication, authorization, and rate-limiting for MCP servers"
-authors = [{ name = "Your Name", email = "you@example.com" }]
-license = "Apache-2.0"
+description = "🔐 Pluggable authentication for FastAPI/ASGI — swap providers (local/Google/AWS/Azure), async-capable, with JWKS caching"
+authors = [{ name = "Christian Britton", email = "cbritt0n@users.noreply.github.com" }]
+license = { text = "Apache-2.0" }
 readme = "README.md"
 requires-python = ">=3.9"
+keywords = [
+    "authentication", "fastapi", "jwt", "oauth2", "aws-cognito", 
+    "google-auth", "azure-ad", "asgi", "middleware", "mcp"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Framework :: AsyncIO",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration :: Authentication/Directory",
+]
 dependencies = [
-    "fastapi",
-    "python-jose",
-    "authlib",
-    "casbin",
-    "redis",
-    "pydantic-settings",
-    "requests",
-    "uvicorn",
+    "fastapi>=0.100.0",
+    "python-jose[cryptography]>=3.3.0",
+    "pydantic-settings>=2.0.0",
+    "requests>=2.28.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/cbritt0n/mcp-auth-py"
-Documentation = "https://github.com/cbritt0n/mcp-auth-py"
-Source = "https://github.com/cbritt0n/mcp-auth-py"
+Documentation = "https://github.com/cbritt0n/mcp-auth-py#readme"
+Repository = "https://github.com/cbritt0n/mcp-auth-py"
+Issues = "https://github.com/cbritt0n/mcp-auth-py/issues"
+Changelog = "https://github.com/cbritt0n/mcp-auth-py/releases"
 
 [project.optional-dependencies]
-google = ["google-auth"]
-aws = ["boto3"]
-azure = ["msal", "azure-identity"]
-all = ["google-auth", "boto3", "msal", "azure-identity"]
-redis_jwks = ["redis", "aioredis", "httpx"]
+# Cloud provider SDKs (install only what you need)
+google = ["google-auth>=2.15.0"]
+aws = ["boto3>=1.26.0"]
+azure = ["msal>=1.20.0", "azure-identity>=1.12.0"]
+
+# Redis JWKS caching for better performance
+redis_jwks = ["redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0"]
+
+# Development dependencies
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "fakeredis>=2.10.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.0.0",
+]
+
+# Install all providers at once
+all = ["google-auth>=2.15.0", "boto3>=1.26.0", "msal>=1.20.0", "azure-identity>=1.12.0"]
+
+# Full installation with all features
+full = [
+    "google-auth>=2.15.0", "boto3>=1.26.0", "msal>=1.20.0", "azure-identity>=1.12.0",
+    "redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0", "uvicorn[standard]>=0.20.0"
+]
+
+[project.scripts]
+mcp-auth-setup = "scripts.setup:main"

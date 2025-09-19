@@ -1,24 +1,15 @@
-# mcp-auth-py
+# mcp-auth-py — pluggable auth for ASGI apps (FastAPI-friendly)
 
 [![CI](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml/badge.svg)](https://github.com/cbritt0n/mcp-auth-py/actions/workflows/ci.yml)
+
+**TL;DR:** Pluggable auth for FastAPI/ASGI — swap providers (local/google/aws/azure), async-capable, with JWKS caching (optional Redis).
 
 🔒 mcp-auth-py is a small, framework-friendly library that adds pluggable authentication providers
 for FastAPI (or other ASGI apps). It provides a lightweight middleware and a small provider
 registry so you can swap in authentication backends for Local (JWT), Google, AWS (Cognito),
 and Azure (AAD) without changing application code.
 
-Why this project
-- Make it easy to support multiple cloud identity providers through a single middleware contract.
-- Minimal dependencies for the core; providers optionally use cloud SDKs when available.
-- Designed to be easy to extend: add a provider and register it — no framework changes.
-
-## Features
-
-TL;DR: Pluggable auth for FastAPI/ASGI — swap providers (local/google/aws/azure), async-capable, with JWKS caching (optional Redis).
-
-# mcp-auth-py — pluggable auth for ASGI apps (FastAPI-friendly)
-
-Quick pitch — why mcp-auth-py?
+## Why use mcp-auth-py?
 - Plug-and-play providers: swap `local`, `google`, `aws` (Cognito), or `azure` without changing app code.
 - Cloud-aware: supports Google ID tokens, AWS Cognito OIDC, and Azure AD OIDC out of the box.
 - Async-friendly: middleware and providers can be async; blocking SDKs are offloaded to threadpools.
@@ -40,15 +31,34 @@ What this library does
 - Per-provider JWKS caching and optional shared Redis JWKS adapter
 - Async-capable flows and small sync/async adapters for non-ASGI MCP servers
 
-## Quickstart (from source)
+## Installation
 
-Clone and install dev dependencies (recommended):
-
+### 🚀 **Quick Setup Wizard**
 ```bash
-git clone https://github.com/cbritt0n/mcp-auth-py.git
-cd mcp-auth-py
-./scripts/setup-dev.sh
+pip install mcp-auth-py
+python -c "from scripts.setup import main; main()"  # Interactive configuration
 ```
+
+### 📦 **Installation Options**
+```bash
+# Basic (local JWT only)
+pip install mcp-auth-py
+
+# With specific cloud providers
+pip install mcp-auth-py[google]        # Google OAuth2
+pip install mcp-auth-py[aws]           # AWS Cognito  
+pip install mcp-auth-py[azure]         # Azure AD
+pip install mcp-auth-py[redis_jwks]    # Redis caching
+
+# All providers + Redis caching
+pip install mcp-auth-py[full]
+
+# Development setup
+git clone https://github.com/cbritt0n/mcp-auth-py.git
+cd mcp-auth-py && pip install -e .[dev]
+```
+
+## Quick start
 
 Run the example app in `examples/server.py`:
 
@@ -58,12 +68,11 @@ uvicorn examples.server:app --reload
 
 Visit http://localhost:8000/hello — the middleware is installed and will block requests without a valid token.
 
-Single-file FastAPI example
----------------------------
+### Single-file FastAPI example
 Here's a minimal, copy-paste FastAPI app that registers the `local` provider and installs the middleware.
 
 ```python
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from mcp_auth.settings import Settings
 from mcp_auth.providers.local import LocalProvider
@@ -80,9 +89,14 @@ app = setup_auth(app, settings=settings)
 
 
 @app.get("/hello")
-def hello():
+def hello(request: Request):
     # request.state.principal will be set by the middleware on success
-    return {"message": "hello from mcp-auth-py example"}
+    principal = request.state.principal
+    return {
+        "message": f"Hello {principal.name}!",
+        "user_id": principal.id,
+        "provider": principal.provider
+    }
 
 if __name__ == "__main__":
     import uvicorn
@@ -224,92 +238,33 @@ Apache-2.0 — see `LICENSE`.
 
 Environment variables are supported via `pydantic-settings` (see `Settings.Config.env_file`).
 
+## 🚀 **Production Deployment**
 
-```python
-from mcp_auth.providers.registry import get_provider
-from mcp_auth.adapters import token_to_principal_sync
-
-provider = get_provider("aws")
-principal = token_to_principal_sync(provider, token)
-if principal is None:
-    # unauthorized
-    ...
-```
-
-## Provider configuration
-
-Set `auth_provider` and `provider_config` via `mcp_auth.settings.Settings` (Pydantic Settings if available).
-
-### Local (default)
-
-```python
-from mcp_auth.settings import Settings
-settings = Settings(auth_provider="local")
-```
-
-### Google
-
-```python
-settings = Settings(
-    auth_provider="google",
-    provider_config={"audience": "GOOGLE_CLIENT_ID"},
-)
-```
-
-### AWS Cognito
-
-```python
-settings = Settings(
-    auth_provider="aws",
-    provider_config={
-        "cognito_region": "us-west-2",
-        "cognito_user_pool_id": "us-west-2_XXXXXXXXX",
-        "audience": "YOUR_COGNITO_APP_CLIENT_ID",
-        "use_cognito_get_user": False,
-    },
-)
-```
-
-### Azure AD
-
-```python
-settings = Settings(
-    auth_provider="azure",
-    provider_config={"tenant": "your-tenant-id", "audience": "APP_CLIENT_ID"},
-)
-```
-
-## Using Redis-backed JWKS cache
-
-Install the optional `redis_jwks` extra and enable it per-provider via `redis_jwks=True` and `redis_url`:
-
+### Docker (Recommended)
 ```bash
-pip install .[redis_jwks]
+# Quick start with Docker
+docker build -t mcp-auth .
+docker run -p 8000:8000 --env-file .env mcp-auth
+
+# Multi-provider setup with docker-compose
+docker-compose up -d  # Runs local, AWS, and Google providers
 ```
 
-```python
-from mcp_auth.providers.aws import AWSProvider
-
-provider = AWSProvider({
-    "cognito_region": "us-west-2",
-    "cognito_user_pool_id": "us-west-2_XXXX",
-    "redis_jwks": True,
-    "redis_url": "redis://redis.example.local:6379/0",
-})
+### Kubernetes
+```bash
+kubectl apply -f k8s/deployment.yaml
 ```
 
-The adapter is optional; when unset the provider falls back to the in-process cache.
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for comprehensive production setup guides, including:
+- AWS Cognito configuration
+- Google OAuth2 setup  
+- Azure AD integration
+- Redis clustering
+- Load balancing
+- Monitoring & alerting
 
-## Development notes
-- JWKS are cached per provider instance; use Redis for multi-process sharing.
-- Tests include shims so you can run the suite without every cloud SDK installed.
+## 💡 **Examples & Use Cases**
 
-## Contributing
-
-See `CONTRIBUTING.md` for contributor guidelines.
-
-## License
-
-Apache-2.0 — see `LICENSE`.
-
-Environment variables are supported via `pydantic-settings` (see `Settings.Config.env_file`).
+- **[complete_app.py](examples/complete_app.py)** — Full FastAPI app with user endpoints
+- **[multi_provider.py](examples/multi_provider.py)** — Different auth providers in one app
+- **[docker_app.py](examples/docker_app.py)** — Production containerized deployment

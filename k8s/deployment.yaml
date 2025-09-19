@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-auth
+  labels:
+    app: mcp-auth
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mcp-auth
+  template:
+    metadata:
+      labels:
+        app: mcp-auth
+    spec:
+      containers:
+      - name: mcp-auth
+        image: mcp-auth:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: AUTH_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-auth-config
+              key: auth-provider
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-auth-secrets
+              key: jwt-secret
+        - name: PROVIDER_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-auth-config
+              key: provider-config
+        - name: REDIS_URL
+          value: "redis://redis-service:6379/0"
+        - name: REDIS_JWKS
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-auth-service
+spec:
+  selector:
+    app: mcp-auth
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-auth-config
+data:
+  auth-provider: "google"
+  provider-config: '{"audience":"your-client-id.apps.googleusercontent.com"}'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mcp-auth-secrets
+type: Opaque
+stringData:
+  jwt-secret: "your-256-bit-secret-key-change-this"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        args: ["redis-server", "--appendonly", "yes"]
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  ports:
+  - protocol: TCP
+    port: 6379
+    targetPort: 6379
