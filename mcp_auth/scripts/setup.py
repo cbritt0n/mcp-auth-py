@@ -4,7 +4,6 @@ mcp-auth setup utility - Quick configuration for different auth providers
 """
 import json
 import os
-from pathlib import Path
 
 
 def create_env_file(provider: str, config: dict):
@@ -159,7 +158,7 @@ def main():
     
     if choice in providers:
         providers[choice]()
-        print(f"\n📝 Next steps:")
+        print("\n📝 Next steps:")
         print("1. Review your .env file")
         print("2. Add mcp-auth middleware to your FastAPI app")
         print("3. Check examples/ directory for usage patterns")

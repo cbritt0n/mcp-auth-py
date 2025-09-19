@@ -3,7 +3,6 @@
 Token generator utility for testing mcp-auth-py
 """
 import sys
-import json
 from mcp_auth.settings import Settings
 
 try:

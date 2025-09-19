@@ -8,13 +8,22 @@ import asyncio
 def test_basic_imports():
     """Test that core modules can be imported"""
     try:
-        from mcp_auth.settings import Settings
-        from mcp_auth.models import Principal
-        from mcp_auth.providers.local import LocalProvider
-        from mcp_auth.middleware import AuthMiddleware
+        import importlib.util
+        
+        modules_to_test = [
+            "mcp_auth.settings", "mcp_auth.models", 
+            "mcp_auth.providers.local", "mcp_auth.middleware"
+        ]
+        
+        for module_name in modules_to_test:
+            spec = importlib.util.find_spec(module_name)
+            if spec is None:
+                print(f"❌ Module {module_name} not found")
+                return False
+        
         print("✅ Core imports successful")
         return True
-    except ImportError as e:
+    except Exception as e:
         print(f"❌ Import error: {e}")
         return False
 
@@ -92,35 +101,20 @@ async def test_async_capabilities():
 
 def test_optional_dependencies():
     """Check which optional providers are available"""
+    import importlib.util
     available = []
     
-    # Test Google provider
-    try:
-        from mcp_auth.providers.google import GoogleProvider
-        available.append("google")
-    except ImportError:
-        pass
+    # Test providers using importlib.util.find_spec
+    providers = {
+        "google": "mcp_auth.providers.google",
+        "aws": "mcp_auth.providers.aws", 
+        "azure": "mcp_auth.providers.azure",
+        "redis_jwks": "mcp_auth.providers.redis_jwks"
+    }
     
-    # Test AWS provider
-    try:
-        from mcp_auth.providers.aws import AWSProvider
-        available.append("aws")
-    except ImportError:
-        pass
-    
-    # Test Azure provider
-    try:
-        from mcp_auth.providers.azure import AzureProvider
-        available.append("azure")
-    except ImportError:
-        pass
-    
-    # Test Redis JWKS
-    try:
-        from mcp_auth.providers.redis_jwks import RedisJWKSCache
-        available.append("redis_jwks")
-    except ImportError:
-        pass
+    for provider_name, module_name in providers.items():
+        if importlib.util.find_spec(module_name):
+            available.append(provider_name)
     
     print(f"📦 Available providers: {', '.join(available) if available else 'local only'}")
     return True

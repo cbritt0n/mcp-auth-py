@@ -81,7 +81,8 @@ Here's a minimal, copy-paste FastAPI app with local JWT authentication:
 
 ```python
 from fastapi import FastAPI, Request
-from mcp_auth import Settings, setup_auth
+from mcp_auth.settings import Settings
+from mcp_auth.setup import setup_auth
 
 # Configure settings for local provider
 settings = Settings(
@@ -112,20 +113,26 @@ if __name__ == "__main__":
 ## Running tests
 
 ```bash
-python -m pip install -r requirements-dev.txt
-pytest -q
+# Install with dev dependencies
+pip install -e .[dev]
+
+# Run the test suite
+pytest -v
 ```
 
 ## Provider SDKs (optional)
 
-Install cloud SDKs only when you need the extra features or want to run provider integration tests:
+mcp-auth-py uses optional dependencies for cloud providers to keep the core package lightweight:
 
 ```bash
-# install provider SDKs individually
-pip install google-auth boto3 msal azure-identity
+# Install specific providers as needed
+pip install -e .[google]        # Google OAuth2 (google-auth)
+pip install -e .[aws]           # AWS Cognito (boto3) 
+pip install -e .[azure]         # Azure AD (OIDC only, no extra deps)
+pip install -e .[redis_jwks]    # Redis JWKS caching
 
-# or install package extras
-pip install .[google]  # or .[aws] .[azure]
+# Or install everything
+pip install -e .[full]          # All providers + Redis + uvicorn
 ```
 
 ## Async support & production readiness

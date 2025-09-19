@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-auth-config
+data:
+  auth-provider: "google"
+  provider-config: '{"audience":"your-client-id.apps.googleusercontent.com"}'
