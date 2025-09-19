@@ -126,8 +126,16 @@ class AWSProvider(Provider):
             raise ProviderError(str(e))
 
         principal_id = claims.get("sub") or claims.get("username")
+        if not principal_id:
+            return AuthResult(valid=False)  # No valid identifier in token
+            
         principal = Principal(
-            id=str(principal_id), provider="aws", name=claims.get("name"), raw=claims
+            id=str(principal_id), 
+            provider="aws", 
+            name=claims.get("name"),
+            email=claims.get("email"),  # Add email support
+            roles=claims.get("cognito:groups"),  # Cognito groups as roles
+            raw=claims
         )
         return AuthResult(
             valid=True, principal=principal, claims=claims, raw={"token": token}

@@ -7,7 +7,7 @@ import json
 from mcp_auth.settings import Settings
 
 try:
-    import jwt
+    from jose import jwt
 except ImportError:
     print("❌ python-jose not installed. Run: pip install python-jose[cryptography]")
     sys.exit(1)

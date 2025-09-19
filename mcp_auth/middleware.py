@@ -1,5 +1,3 @@
-from typing import Callable, Optional
-
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -9,23 +7,10 @@ from .providers.local import LocalProvider
 from .settings import Settings
 
 
-def _default_token_extractor(request: Request) -> Optional[str]:
-    auth = request.headers.get("Authorization")
-    if auth and auth.startswith("Bearer "):
-        return auth.split(" ", 1)[1]
-    # fallback to cookie or query param
-    token = request.cookies.get("access_token")
-    if token:
-        return token
-    token = request.query_params.get("access_token")
-    return token
-
-
 class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, settings: Settings, token_extractor: Callable = None):
+    def __init__(self, app, settings: Settings):
         super().__init__(app)
         self.settings = settings
-        self.token_extractor = token_extractor or _default_token_extractor
         # Ensure local provider is registered (backwards-compatible)
         try:
             get_provider(settings.auth_provider)

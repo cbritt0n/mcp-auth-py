@@ -117,7 +117,7 @@ def test_optional_dependencies():
     
     # Test Redis JWKS
     try:
-        from mcp_auth.providers.redis_jwks import RedisJWKSAdapter
+        from mcp_auth.providers.redis_jwks import RedisJWKSCache
         available.append("redis_jwks")
     except ImportError:
         pass
@@ -155,9 +155,10 @@ def main():
     if passed == len(tests) + 1:
         print("🎉 mcp-auth-py is ready to use!")
         print("\nNext steps:")
-        print("  1. Run: python scripts/setup.py  # Interactive setup")
+        print("  1. Run: mcp-auth-setup  # Interactive setup")
         print("  2. Check examples/ directory for usage patterns")
         print("  3. See DEPLOYMENT.md for production setup")
+        print("  4. Generate tokens: mcp-auth-generate-token --help")
     else:
         print("⚠️  Some tests failed. Check your installation.")
         sys.exit(1)

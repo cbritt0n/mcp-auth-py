@@ -117,12 +117,11 @@ class RedisJWKSCache:
             try:
                 client.set(key, json.dumps(jwks), ex=self.ttl)
             except Exception:
+                # Fallback for older Redis versions that don't support ex parameter
                 try:
-                    client.set(key, json.dumps(jwks))
+                    client.setex(key, self.ttl, json.dumps(jwks))
                 except Exception:
                     pass
-            except Exception:
-                pass
         return jwks
 
     async def get_jwks_async(self) -> Dict[str, Any]:
@@ -160,8 +159,9 @@ class RedisJWKSCache:
                     try:
                         await aclient.set(key, json.dumps(jwks), ex=self.ttl)
                     except Exception:
+                        # Fallback for older Redis versions that don't support ex parameter
                         try:
-                            await aclient.set(key, json.dumps(jwks))
+                            await aclient.setex(key, self.ttl, json.dumps(jwks))
                         except Exception:
                             pass
                     return jwks

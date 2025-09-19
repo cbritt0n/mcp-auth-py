@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 
 from .middleware import AuthMiddleware
-from .providers.aws import AWSProvider
-from .providers.azure import AzureProvider
-from .providers.google import GoogleProvider
 from .providers.local import LocalProvider
 from .providers.registry import register_provider
 from .settings import Settings
@@ -11,10 +8,10 @@ from .settings import Settings
 
 def setup_auth(app: FastAPI, settings: Settings = None):
     settings = settings or Settings()
-    # register common providers; apps may register concrete providers before
-    # calling setup. Local provider receives full Settings for jwt_secret.
+    # Always register local provider as it has no optional dependencies
     register_provider("local", LocalProvider(settings))
 
+    # Register cloud providers only if their dependencies are available
     provider_cfg = settings.provider_config or {}
     # propagate redis_jwks and redis_url from top-level settings if present
     if hasattr(settings, "redis_jwks") and settings.redis_jwks:
@@ -22,8 +19,24 @@ def setup_auth(app: FastAPI, settings: Settings = None):
         if hasattr(settings, "redis_url") and settings.redis_url:
             provider_cfg.setdefault("redis_url", settings.redis_url)
 
-    register_provider("azure", AzureProvider(provider_cfg))
-    register_provider("aws", AWSProvider(provider_cfg))
-    register_provider("google", GoogleProvider(provider_cfg))
+    # Try to register cloud providers if available
+    try:
+        from .providers.google import GoogleProvider
+        register_provider("google", GoogleProvider(provider_cfg))
+    except ImportError:
+        pass  # Google provider dependencies not installed
+    
+    try:
+        from .providers.aws import AWSProvider
+        register_provider("aws", AWSProvider(provider_cfg))
+    except ImportError:
+        pass  # AWS provider dependencies not installed
+    
+    try:
+        from .providers.azure import AzureProvider
+        register_provider("azure", AzureProvider(provider_cfg))
+    except ImportError:
+        pass  # Azure provider dependencies not installed
+
     app.add_middleware(AuthMiddleware, settings=settings)
     return app

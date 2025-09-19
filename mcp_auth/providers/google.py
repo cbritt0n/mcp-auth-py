@@ -66,6 +66,9 @@ class GoogleProvider(Provider):
             raise ProviderError(str(e))
 
         principal_id = claims.get("sub") or claims.get("email")
+        if not principal_id:
+            return AuthResult(valid=False)  # No valid identifier in token
+            
         principal = Principal(
             id=str(principal_id),
             provider="google",

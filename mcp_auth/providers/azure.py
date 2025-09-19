@@ -7,11 +7,6 @@ from mcp_auth.models import Principal
 from .base import AuthResult, Provider, ProviderError
 from .oidc import JWKSCache, get_jwks_url_from_well_known
 
-try:
-    import msal
-except Exception:
-    msal = None
-
 # Default well-known URL template for Azure AD
 AZURE_WELL_KNOWN = (
     "https://login.microsoftonline.com/{tenant}/v2.0/"
@@ -29,14 +24,6 @@ class AzureProvider(Provider):
         if not auth or not auth.startswith("Bearer "):
             return AuthResult(valid=False)
         token = auth.split(" ", 1)[1]
-
-        # If configured to attempt MSAL introspection or SDK checks, try those
-        # first
-        if self.config.get("use_msal_introspect"):
-            if msal is None:
-                raise ProviderError("msal is required for use_msal_introspect option")
-            # MSAL doesn't provide a direct introspect endpoint helper; fall
-            # back to OIDC if not implemented
 
         tenant = self.config.get("tenant") or "common"
         well_known = self.config.get("well_known") or AZURE_WELL_KNOWN.format(
@@ -79,8 +66,16 @@ class AzureProvider(Provider):
             raise ProviderError(str(e))
 
         principal_id = claims.get("sub") or claims.get("upn") or claims.get("oid")
+        if not principal_id:
+            return AuthResult(valid=False)  # No valid identifier in token
+            
         principal = Principal(
-            id=str(principal_id), provider="azure", name=claims.get("name"), raw=claims
+            id=str(principal_id), 
+            provider="azure", 
+            name=claims.get("name"),
+            email=claims.get("upn") or claims.get("email"),  # UPN or email
+            roles=claims.get("groups") or claims.get("roles"),  # Azure AD groups/roles
+            raw=claims
         )
         return AuthResult(
             valid=True, principal=principal, claims=claims, raw={"token": token}

@@ -2,9 +2,8 @@
 """
 mcp-auth setup utility - Quick configuration for different auth providers
 """
-import os
 import json
-import sys
+import os
 from pathlib import Path
 
 
@@ -66,7 +65,7 @@ def setup_google():
     
     create_env_file('google', config)
     print("\n🎯 Google setup complete!")
-    print("Install the Google provider: pip install mcp-auth-py[google]")
+    print("Install the Google provider: pip install -e .[google]")
 
 
 def setup_aws():
@@ -99,7 +98,7 @@ def setup_aws():
     
     create_env_file('aws', config)
     print("\n🎯 AWS setup complete!")
-    print("Install the AWS provider: pip install mcp-auth-py[aws]")
+    print("Install the AWS provider: pip install -e .[aws]")
 
 
 def setup_azure():
@@ -130,7 +129,7 @@ def setup_azure():
     
     create_env_file('azure', config)
     print("\n🎯 Azure setup complete!")
-    print("Install the Azure provider: pip install mcp-auth-py[azure]")
+    print("Install the Azure provider: pip install -e .[azure]")
 
 
 def main():

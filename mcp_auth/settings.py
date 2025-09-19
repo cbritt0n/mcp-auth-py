@@ -4,15 +4,17 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # JWT settings for local provider
     jwt_secret: str = "supersecret"
     jwt_algorithm: str = "HS256"
-    use_redis_ratelimit: bool = False
-    casbin_policy_path: Optional[str] = None
-    # pluggable provider name: 'local', 'azure', 'aws', 'google'
+    
+    # Provider selection: 'local', 'google', 'aws', 'azure'
     auth_provider: str = "local"
-    # provider specific configuration (optional)
+    
+    # Provider-specific configuration (optional)
     provider_config: Optional[Dict[str, Any]] = None
-    # optional Redis JWKS settings
+    
+    # Redis JWKS caching settings (optional)
     redis_jwks: bool = False
     redis_url: Optional[str] = None
 

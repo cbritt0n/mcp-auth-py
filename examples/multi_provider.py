@@ -2,7 +2,6 @@
 Multi-provider example showing different authentication methods
 """
 import os
-import jwt
 from fastapi import FastAPI, Request
 
 from mcp_auth.setup import setup_auth
@@ -83,6 +82,11 @@ def create_local_app_with_redis():
     @app.post("/generate-token")
     async def generate_token(user_id: str, name: str = "Test User"):
         """Helper endpoint to generate local JWT tokens for testing"""
+        try:
+            import jwt
+        except ImportError:
+            return {"error": "PyJWT not installed. Run: pip install PyJWT"}
+        
         payload = {
             "sub": user_id,
             "name": name,

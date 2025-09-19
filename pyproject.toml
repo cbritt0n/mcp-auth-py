@@ -48,7 +48,7 @@ Changelog = "https://github.com/cbritt0n/mcp-auth-py/releases"
 # Cloud provider SDKs (install only what you need)
 google = ["google-auth>=2.15.0"]
 aws = ["boto3>=1.26.0"]
-azure = ["msal>=1.20.0", "azure-identity>=1.12.0"]
+azure = []  # Azure provider uses OIDC JWKS validation only
 
 # Redis JWKS caching for better performance
 redis_jwks = ["redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0"]
@@ -65,13 +65,18 @@ dev = [
 ]
 
 # Install all providers at once
-all = ["google-auth>=2.15.0", "boto3>=1.26.0", "msal>=1.20.0", "azure-identity>=1.12.0"]
+all = ["google-auth>=2.15.0", "boto3>=1.26.0"]
 
 # Full installation with all features
 full = [
-    "google-auth>=2.15.0", "boto3>=1.26.0", "msal>=1.20.0", "azure-identity>=1.12.0",
+    "google-auth>=2.15.0", "boto3>=1.26.0",
     "redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0", "uvicorn[standard]>=0.20.0"
 ]
 
 [project.scripts]
-mcp-auth-setup = "scripts.setup:main"
+mcp-auth-setup = "mcp_auth.scripts.setup:main"
+mcp-auth-generate-token = "mcp_auth.scripts.generate_token:main"
+mcp-auth-validate = "mcp_auth.scripts.validate_install:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_auth"]

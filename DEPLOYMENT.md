@@ -5,7 +5,7 @@
 ### Option 1: Docker (Recommended)
 
 ```bash
-# 1. Clone and build
+# 1. Clone and setup
 git clone https://github.com/cbritt0n/mcp-auth-py.git
 cd mcp-auth-py
 
@@ -13,7 +13,7 @@ cd mcp-auth-py
 cp .env.example .env
 # Edit .env with your settings
 
-# 3. Build and run
+# 3. Build and run with Docker
 docker build -t mcp-auth .
 docker run -p 8000:8000 --env-file .env mcp-auth
 ```
@@ -44,8 +44,10 @@ kubectl get service mcp-auth-service
 
 ### Local Development
 ```bash
-# Install with all providers
-pip install mcp-auth-py[all]
+# Clone and install with all providers
+git clone https://github.com/cbritt0n/mcp-auth-py.git
+cd mcp-auth-py
+pip install -e .[all]
 
 # Quick setup
 python scripts/setup.py

@@ -24,12 +24,17 @@ class LocalProvider(Provider):
             )
         except JWTError:
             return AuthResult(valid=False)
+        
         principal_id = claims.get("sub") or claims.get("email")
+        if not principal_id:
+            return AuthResult(valid=False)  # No valid identifier in token
+            
         principal = Principal(
             id=str(principal_id),
             provider="local",
             name=claims.get("name"),
             email=claims.get("email"),
+            roles=claims.get("roles"),  # Support roles in local tokens
             raw=claims,
         )
         return AuthResult(

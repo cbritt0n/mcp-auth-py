@@ -33,29 +33,37 @@ What this library does
 
 ## Installation
 
-### 🚀 **Quick Setup Wizard**
+### 🚀 **Quick Setup**
 ```bash
-pip install mcp-auth-py
-python -c "from scripts.setup import main; main()"  # Interactive configuration
+# Clone and install locally
+git clone https://github.com/cbritt0n/mcp-auth-py.git
+cd mcp-auth-py
+pip install -e .
+
+# Interactive setup wizard
+mcp-auth-setup
+
+# Validate installation  
+mcp-auth-validate
 ```
 
 ### 📦 **Installation Options**
 ```bash
-# Basic (local JWT only)
-pip install mcp-auth-py
+# Clone the repository
+git clone https://github.com/cbritt0n/mcp-auth-py.git
+cd mcp-auth-py
 
-# With specific cloud providers
-pip install mcp-auth-py[google]        # Google OAuth2
-pip install mcp-auth-py[aws]           # AWS Cognito  
-pip install mcp-auth-py[azure]         # Azure AD
-pip install mcp-auth-py[redis_jwks]    # Redis caching
+# Basic installation (local JWT only)
+pip install -e .
+
+# With specific cloud providers  
+pip install -e .[google]        # Google OAuth2
+pip install -e .[aws]           # AWS Cognito  
+pip install -e .[azure]         # Azure AD
+pip install -e .[redis_jwks]    # Redis caching
 
 # All providers + Redis caching
-pip install mcp-auth-py[full]
-
-# Development setup
-git clone https://github.com/cbritt0n/mcp-auth-py.git
-cd mcp-auth-py && pip install -e .[dev]
+pip install -e .[full]
 ```
 
 ## Quick start
@@ -69,38 +77,35 @@ uvicorn examples.server:app --reload
 Visit http://localhost:8000/hello — the middleware is installed and will block requests without a valid token.
 
 ### Single-file FastAPI example
-Here's a minimal, copy-paste FastAPI app that registers the `local` provider and installs the middleware.
+Here's a minimal, copy-paste FastAPI app with local JWT authentication:
 
 ```python
 from fastapi import FastAPI, Request
+from mcp_auth import Settings, setup_auth
 
-from mcp_auth.settings import Settings
-from mcp_auth.providers.local import LocalProvider
-from mcp_auth.providers.registry import register_provider
-from mcp_auth.setup import setup_auth
+# Configure settings for local provider
+settings = Settings(
+    auth_provider="local", 
+    jwt_secret="your-dev-secret-key"
+)
 
-# configure Settings (for local provider we provide a jwt_secret)
-settings = Settings(auth_provider="local", provider_config={"jwt_secret": "dev-secret"})
-
-# register the provider and wire middleware
-register_provider("local", LocalProvider(settings))
+# Create FastAPI app with authentication
 app = FastAPI()
-app = setup_auth(app, settings=settings)
+app = setup_auth(app, settings)
 
 
 @app.get("/hello")
 def hello(request: Request):
-    # request.state.principal will be set by the middleware on success
+    # request.state.principal is set by the middleware on success
     principal = request.state.principal
     return {
-        "message": f"Hello {principal.name}!",
+        "message": f"Hello {principal.name or principal.id}!",
         "user_id": principal.id,
         "provider": principal.provider
     }
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="127.0.0.1", port=8000)
 ```
 
