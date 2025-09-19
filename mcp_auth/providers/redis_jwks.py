@@ -159,7 +159,7 @@ class RedisJWKSCache:
                     try:
                         await aclient.set(key, json.dumps(jwks), ex=self.ttl)
                     except Exception:
-                        # Fallback for older Redis versions that don't support ex parameter
+                        # Fallback for older Redis versions that don't support ex
                         try:
                             await aclient.setex(key, self.ttl, json.dumps(jwks))
                         except Exception:

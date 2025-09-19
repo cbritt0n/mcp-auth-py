@@ -2,8 +2,9 @@
 Docker deployment example for mcp-auth-py
 """
 from fastapi import FastAPI, Request
-from mcp_auth.setup import setup_auth
+
 from mcp_auth.settings import Settings
+from mcp_auth.setup import setup_auth
 
 # Production-ready app configuration
 app = FastAPI(

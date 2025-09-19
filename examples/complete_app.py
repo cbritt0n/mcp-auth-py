@@ -1,11 +1,11 @@
 """
 Complete FastAPI example with user info endpoint and authentication
 """
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from mcp_auth.setup import setup_auth
 from mcp_auth.models import Principal
+from mcp_auth.setup import setup_auth
 
 # Initialize FastAPI app with auth middleware
 app = FastAPI(

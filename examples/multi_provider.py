@@ -2,10 +2,11 @@
 Multi-provider example showing different authentication methods
 """
 import os
+
 from fastapi import FastAPI, Request
 
-from mcp_auth.setup import setup_auth
 from mcp_auth.settings import Settings
+from mcp_auth.setup import setup_auth
 
 # Example 1: Google OAuth2
 def create_google_app():

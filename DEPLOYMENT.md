@@ -26,7 +26,7 @@ docker-compose up -d
 
 # Access different providers:
 # Local JWT:    http://localhost:8000
-# AWS Cognito:  http://localhost:8001  
+# AWS Cognito:  http://localhost:8001
 # Google OAuth: http://localhost:8002
 ```
 

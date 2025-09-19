@@ -11,7 +11,7 @@ license = { text = "Apache-2.0" }
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = [
-    "authentication", "fastapi", "jwt", "oauth2", "aws-cognito", 
+    "authentication", "fastapi", "jwt", "oauth2", "aws-cognito",
     "google-auth", "azure-ad", "asgi", "middleware", "mcp"
 ]
 classifiers = [

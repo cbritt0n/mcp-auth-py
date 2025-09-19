@@ -32,7 +32,7 @@ services:
     depends_on:
       - redis
 
-  # Google OAuth2 example  
+  # Google OAuth2 example
   mcp-auth-google:
     build: .
     ports:

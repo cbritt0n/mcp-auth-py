@@ -43,7 +43,7 @@ pip install -e .
 # Interactive setup wizard
 mcp-auth-setup
 
-# Validate installation  
+# Validate installation
 mcp-auth-validate
 ```
 
@@ -56,9 +56,9 @@ cd mcp-auth-py
 # Basic installation (local JWT only)
 pip install -e .
 
-# With specific cloud providers  
+# With specific cloud providers
 pip install -e .[google]        # Google OAuth2
-pip install -e .[aws]           # AWS Cognito  
+pip install -e .[aws]           # AWS Cognito
 pip install -e .[azure]         # Azure AD
 pip install -e .[redis_jwks]    # Redis caching
 
@@ -86,7 +86,7 @@ from mcp_auth.setup import setup_auth
 
 # Configure settings for local provider
 settings = Settings(
-    auth_provider="local", 
+    auth_provider="local",
     jwt_secret="your-dev-secret-key"
 )
 
@@ -127,7 +127,7 @@ mcp-auth-py uses optional dependencies for cloud providers to keep the core pack
 ```bash
 # Install specific providers as needed
 pip install -e .[google]        # Google OAuth2 (google-auth)
-pip install -e .[aws]           # AWS Cognito (boto3) 
+pip install -e .[aws]           # AWS Cognito (boto3)
 pip install -e .[azure]         # Azure AD (OIDC only, no extra deps)
 pip install -e .[redis_jwks]    # Redis JWKS caching
 
@@ -269,7 +269,7 @@ kubectl apply -f k8s/deployment.yaml
 
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for comprehensive production setup guides, including:
 - AWS Cognito configuration
-- Google OAuth2 setup  
+- Google OAuth2 setup
 - Azure AD integration
 - Redis clustering
 - Load balancing
