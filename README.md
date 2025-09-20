@@ -30,6 +30,7 @@ What this library does
 - `azure` provider that validates tokens from your tenant's OIDC endpoint
 - Per-provider JWKS caching and optional shared Redis JWKS adapter
 - Async-capable flows and small sync/async adapters for non-ASGI MCP servers
+- **NEW:** RBAC Extension for fine-grained role-based access control
 
 ## Installation
 
@@ -61,8 +62,9 @@ pip install -e .[google]        # Google OAuth2
 pip install -e .[aws]           # AWS Cognito
 pip install -e .[azure]         # Azure AD
 pip install -e .[redis_jwks]    # Redis caching
+pip install -e .[rbac]          # RBAC Extension
 
-# All providers + Redis caching
+# All providers + Redis caching + RBAC
 pip install -e .[full]
 ```
 
@@ -280,3 +282,49 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for comprehensive production setup guides
 - **[complete_app.py](examples/complete_app.py)** — Full FastAPI app with user endpoints
 - **[multi_provider.py](examples/multi_provider.py)** — Different auth providers in one app
 - **[docker_app.py](examples/docker_app.py)** — Production containerized deployment
+- **[rbac_demo.py](examples/rbac_demo.py)** — Complete RBAC system with role-based access control
+
+## 🔐 **RBAC Extension**
+
+The RBAC (Role-Based Access Control) extension adds comprehensive authorization capabilities:
+
+```python
+from mcp_auth.rbac import RBACEngine, Role, Permission, require_permissions
+
+# Setup RBAC engine
+engine = RBACEngine()
+
+# Create roles with hierarchical permissions
+admin_role = Role("admin", "Administrator", [
+    Permission.from_string("*:*:*")  # Full access
+])
+editor_role = Role("editor", "Content Editor", [
+    Permission.from_string("posts:create"),
+    Permission.from_string("posts:*:edit"),
+    Permission.from_string("posts:*:delete")
+])
+
+engine.add_role(admin_role)
+engine.add_role(editor_role)
+engine.assign_role("user123", "editor")
+
+# Protect endpoints with decorators
+@app.post("/posts")
+@require_permissions("posts:create")
+async def create_post():
+    return {"message": "Post created"}
+
+@app.put("/posts/{post_id}")
+@require_permissions("posts:edit")  # Auto-resolves to posts:{post_id}:edit
+async def update_post(post_id: str):
+    return {"message": f"Post {post_id} updated"}
+```
+
+### RBAC Features
+- **Hierarchical Roles**: Roles inherit permissions from parent roles
+- **Resource-Specific Permissions**: Fine-grained control with wildcards support
+- **FastAPI Decorators**: `@require_permissions`, `@require_roles`, `@require_access`
+- **Admin Interface**: REST API for managing roles and permissions
+- **Flexible Architecture**: Works with any authentication provider
+
+See **[docs/rbac_extension.md](docs/rbac_extension.md)** for complete RBAC documentation and **[examples/rbac_demo.py](examples/rbac_demo.py)** for a working example.

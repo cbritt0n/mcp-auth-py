@@ -53,6 +53,9 @@ azure = []  # Azure provider uses OIDC JWKS validation only
 # Redis JWKS caching for better performance
 redis_jwks = ["redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0"]
 
+# RBAC Extension for role-based access control
+rbac = []  # No additional dependencies required
+
 # Development dependencies
 dev = [
     "pytest>=7.0.0",

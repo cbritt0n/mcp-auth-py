@@ -68,14 +68,14 @@ class AzureProvider(Provider):
         principal_id = claims.get("sub") or claims.get("upn") or claims.get("oid")
         if not principal_id:
             return AuthResult(valid=False)  # No valid identifier in token
-            
+
         principal = Principal(
-            id=str(principal_id), 
-            provider="azure", 
+            id=str(principal_id),
+            provider="azure",
             name=claims.get("name"),
             email=claims.get("upn") or claims.get("email"),  # UPN or email
             roles=claims.get("groups") or claims.get("roles"),  # Azure AD groups/roles
-            raw=claims
+            raw=claims,
         )
         return AuthResult(
             valid=True, principal=principal, claims=claims, raw={"token": token}

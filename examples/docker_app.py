@@ -1,6 +1,7 @@
 """
 Docker deployment example for mcp-auth-py
 """
+
 from fastapi import FastAPI, Request
 
 from mcp_auth.settings import Settings
@@ -25,7 +26,7 @@ async def health_check():
     return {
         "status": "healthy",
         "provider": settings.auth_provider,
-        "redis_enabled": settings.redis_jwks
+        "redis_enabled": settings.redis_jwks,
     }
 
 
@@ -35,21 +36,18 @@ async def get_data(request: Request):
     user = request.state.principal
     if not user:
         return {"error": "Authentication required"}, 401
-    
+
     return {
         "data": "Protected resource accessed successfully",
         "user_id": user.id,
-        "timestamp": "2024-01-01T00:00:00Z"
+        "timestamp": "2024-01-01T00:00:00Z",
     }
 
 
 if __name__ == "__main__":
     # For development only - use proper ASGI server in production
     import uvicorn
+
     uvicorn.run(
-        "examples.docker_app:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=False,
-        workers=1
+        "examples.docker_app:app", host="0.0.0.0", port=8000, reload=False, workers=1
     )
