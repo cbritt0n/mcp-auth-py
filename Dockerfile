@@ -24,8 +24,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy built wheel and install
 COPY --from=builder /build/wheels/*.whl /tmp/
-RUN pip install --no-cache-dir /tmp/mcp_auth_py-*.whl[all] uvicorn[standard] \
-    && rm -rf /tmp/*.whl
+RUN WHEEL_FILE=$(ls /tmp/*.whl) && \
+    pip install --no-cache-dir "${WHEEL_FILE}[all]" uvicorn[standard] && \
+    rm -rf /tmp/*.whl
 
 # Copy application
 COPY examples/docker_app.py ./app.py
