@@ -75,7 +75,7 @@ jobs:
           # Install provider SDKs directly to avoid building the package wheel (hatchling)
           pip install google-auth boto3
           # Install Redis/WebSocket/audit runtime deps for provider integration tests
-          pip install redis aioredis httpx websockets redis-py-cluster fakeredis
+          pip install redis aioredis httpx websockets fakeredis
           pip install -r requirements-dev.txt
       - name: Run provider integration tests
         env:
@@ -106,7 +106,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # Install all feature dependencies
-          pip install redis aioredis websockets httpx redis-py-cluster fakeredis
+          pip install redis aioredis websockets httpx fakeredis
           pip install -r requirements-dev.txt
       - name: Run feature tests (WebSocket, Caching, Audit)
         env:

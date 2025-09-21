@@ -60,7 +60,7 @@ realtime = ["websockets>=11.0.0", "redis>=4.5.0", "aioredis>=2.0.0"]
 audit = ["redis>=4.5.0", "aioredis>=2.0.0"]
 
 # High-performance distributed caching
-caching = ["redis>=4.5.0", "aioredis>=2.0.0", "redis-py-cluster>=2.1.0"]
+caching = ["redis>=4.5.0", "aioredis>=2.0.0"]
 
 # RBAC Extension for role-based access control
 rbac = []  # No additional dependencies required
@@ -86,7 +86,7 @@ all = ["google-auth>=2.15.0", "boto3>=1.26.0"]
 full = [
     "google-auth>=2.15.0", "boto3>=1.26.0",
     "redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0",
-    "websockets>=11.0.0", "redis-py-cluster>=2.1.0",
+    "websockets>=11.0.0",
     "uvicorn[standard]>=0.20.0"
 ]
 

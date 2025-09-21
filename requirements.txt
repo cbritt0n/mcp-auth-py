@@ -9,8 +9,5 @@ websockets>=11.0.0
 redis>=4.5.0
 aioredis>=2.0.0
 
-# Performance & caching
-redis-py-cluster>=2.1.0
-
 # Development server
 uvicorn[standard]>=0.20.0
