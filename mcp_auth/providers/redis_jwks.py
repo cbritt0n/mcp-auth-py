@@ -15,7 +15,7 @@ except Exception:
     redis_sync = None
 
 try:
-    import aioredis
+    import redis.asyncio as aioredis
 except Exception:
     aioredis = None
 

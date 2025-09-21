@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 try:
-    import aioredis
+    import redis.asyncio as aioredis
 
     REDIS_AVAILABLE = True
 except ImportError:

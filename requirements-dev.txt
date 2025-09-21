@@ -13,7 +13,6 @@ httpx>=0.24.0
 # Real-time and caching dependencies for testing
 websockets>=11.0.0
 redis>=4.5.0
-aioredis>=2.0.0
 
 # dev tools
 pre-commit>=3.0.0

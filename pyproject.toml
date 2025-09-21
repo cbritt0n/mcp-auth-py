@@ -51,16 +51,16 @@ aws = ["boto3>=1.26.0"]
 azure = []  # Azure provider uses OIDC JWKS validation only
 
 # Redis JWKS caching for better performance
-redis_jwks = ["redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0"]
+redis_jwks = ["redis>=4.5.0", "httpx>=0.24.0"]
 
 # Real-time WebSocket features
-realtime = ["websockets>=11.0.0", "redis>=4.5.0", "aioredis>=2.0.0"]
+realtime = ["websockets>=11.0.0", "redis>=4.5.0"]
 
 # Audit trail and analytics
-audit = ["redis>=4.5.0", "aioredis>=2.0.0"]
+audit = ["redis>=4.5.0"]
 
 # High-performance distributed caching
-caching = ["redis>=4.5.0", "aioredis>=2.0.0"]
+caching = ["redis>=4.5.0"]
 
 # RBAC Extension for role-based access control
 rbac = []  # No additional dependencies required
@@ -85,7 +85,7 @@ all = ["google-auth>=2.15.0", "boto3>=1.26.0"]
 # Full installation with all features
 full = [
     "google-auth>=2.15.0", "boto3>=1.26.0",
-    "redis>=4.5.0", "aioredis>=2.0.0", "httpx>=0.24.0",
+    "redis>=4.5.0", "httpx>=0.24.0",
     "websockets>=11.0.0",
     "uvicorn[standard]>=0.20.0"
 ]
