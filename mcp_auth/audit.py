@@ -253,7 +253,7 @@ class AuditStorage:
         # In-memory storage for demo purposes
         # In production, use database, Elasticsearch, or other persistent storage
         self.events: list[AuditEvent] = []
-        self._lock = asyncio.Lock()
+        self._lock = None  # Lazy-initialized when first async method is called
 
         # Indices for faster queries
         self._user_index: dict[str, list[int]] = defaultdict(list)
@@ -261,8 +261,14 @@ class AuditStorage:
         self._resource_index: dict[str, list[int]] = defaultdict(list)
         self._time_index: list[tuple[datetime, int]] = []
 
+    def _ensure_lock(self):
+        """Ensure the async lock is initialized"""
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+
     async def store_event(self, event: AuditEvent) -> str:
         """Store an audit event"""
+        self._ensure_lock()
         async with self._lock:
             event_index = len(self.events)
             self.events.append(event)
@@ -282,6 +288,7 @@ class AuditStorage:
 
     async def query_events(self, filter_criteria: AuditFilter) -> list[AuditEvent]:
         """Query audit events with filtering"""
+        self._ensure_lock()
         async with self._lock:
             # Start with all events
             candidate_indices = set(range(len(self.events)))
