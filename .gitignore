@@ -8,3 +8,5 @@ dist/
 build/
 *.egg-info/
 .env
+bandit-report.json
+.ruff_cache/

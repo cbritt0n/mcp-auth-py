@@ -1,6 +1,10 @@
-# Production Deployment Guide
+# Quick Deployment Guide
 
-## 🚀 Quick Deployment Options
+> 📖 **For comprehensive production deployment with security, monitoring, and advanced features, see [docs/production_deployment.md](docs/production_deployment.md)**
+
+This guide provides quick deployment options for getting MCP Auth running in different environments.
+
+## 🚀 Quick Start Options
 
 ### Option 1: Docker (Recommended)
 

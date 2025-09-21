@@ -1,6 +1,6 @@
 import hashlib
 import json
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
@@ -92,7 +92,7 @@ class RedisJWKSCache:
                 self._aclient = await mod.create_redis_pool(self.redis_url)
         return self._aclient
 
-    def get_jwks(self) -> Dict[str, Any]:
+    def get_jwks(self) -> dict[str, Any]:
         """Synchronous JWKS fetch with Redis caching."""
         key = self._key()
         client = self._get_sync_client()
@@ -124,7 +124,7 @@ class RedisJWKSCache:
                     pass
         return jwks
 
-    async def get_jwks_async(self) -> Dict[str, Any]:
+    async def get_jwks_async(self) -> dict[str, Any]:
         """Async JWKS fetch with Redis caching when possible.
 
         If `aioredis` is available, use it; otherwise fall back to running the

@@ -9,7 +9,7 @@ and comprehensive monitoring.
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -86,10 +86,10 @@ class RoleModel(BaseModel):
         ..., max_length=MAX_ROLE_NAME_LENGTH, pattern=r"^[a-zA-Z][a-zA-Z0-9_]*$"
     )
     description: str = Field(..., max_length=MAX_DESCRIPTION_LENGTH)
-    permissions: List[PermissionModel] = Field(
+    permissions: list[PermissionModel] = Field(
         default_factory=list, max_length=MAX_PERMISSIONS_PER_ROLE
     )
-    inherits: Optional[List[str]] = Field(None, max_length=10)
+    inherits: Optional[list[str]] = Field(None, max_length=10)
 
     @field_validator("name")
     @classmethod
@@ -109,7 +109,7 @@ class RoleModel(BaseModel):
 
     @field_validator("inherits")
     @classmethod
-    def validate_inherits(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_inherits(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate role inheritance"""
         if v is None:
             return v
@@ -180,11 +180,11 @@ class PermissionCheckRequest(BaseModel):
     resource_id: Optional[str] = Field(
         None, max_length=64, pattern=r"^[a-zA-Z0-9_\-]*$"
     )
-    context: Optional[Dict[str, Any]] = Field(None, max_length=20)
+    context: Optional[dict[str, Any]] = Field(None, max_length=20)
 
     @field_validator("context")
     @classmethod
-    def validate_context(cls, v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def validate_context(cls, v: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
         """Validate context dictionary"""
         if v is None:
             return v
@@ -201,8 +201,8 @@ class RoleStatsResponse(BaseModel):
     description: str
     permission_count: int
     user_count: int
-    inherits_from: List[str]
-    inherited_by: List[str]
+    inherits_from: list[str]
+    inherited_by: list[str]
     created_at: Optional[datetime] = None
     last_modified: Optional[datetime] = None
 
@@ -220,7 +220,7 @@ class SystemHealthResponse(BaseModel):
     uptime_seconds: int
 
 
-def _audit_log(action: str, principal: Principal, details: Dict[str, Any]) -> None:
+def _audit_log(action: str, principal: Principal, details: dict[str, Any]) -> None:
     """Log administrative actions for audit purposes"""
     logger.info(
         f"RBAC Admin Action: {action}",
@@ -315,7 +315,7 @@ def create_rbac_admin_router() -> APIRouter:
 
     # ================== ROLE MANAGEMENT ==================
 
-    @router.get("/roles", response_model=List[RoleStatsResponse])
+    @router.get("/roles", response_model=list[RoleStatsResponse])
     @require_permissions("rbac:roles:read")
     async def list_roles(
         request: Request,
@@ -549,7 +549,7 @@ def create_rbac_admin_router() -> APIRouter:
 
     # ================== USER-ROLE MANAGEMENT ==================
 
-    @router.get("/users/{user_id}/roles", response_model=List[str])
+    @router.get("/users/{user_id}/roles", response_model=list[str])
     @require_permissions("rbac:users:read")
     async def get_user_roles(user_id: str, request: Request):
         """Get roles assigned to a user with validation"""
@@ -679,7 +679,7 @@ def create_rbac_admin_router() -> APIRouter:
             )
             raise HTTPException(status_code=500, detail="Failed to revoke role")
 
-    @router.get("/users/{user_id}/permissions", response_model=List[PermissionModel])
+    @router.get("/users/{user_id}/permissions", response_model=list[PermissionModel])
     @require_permissions("rbac:users:read")
     async def get_user_permissions(user_id: str, request: Request):
         """Get all permissions for a user (computed from roles) with caching"""
@@ -793,7 +793,7 @@ def create_rbac_admin_router() -> APIRouter:
     @router.post("/bulk-check-permissions")
     @require_permissions("rbac:permissions:check")
     async def bulk_check_permissions(
-        checks: List[PermissionCheckRequest],
+        checks: list[PermissionCheckRequest],
         request: Request,
         max_checks: int = Query(
             50, ge=1, le=100, description="Maximum number of checks per request"

@@ -5,9 +5,9 @@ This module defines the configuration schema using Pydantic settings,
 supporting environment variables, .env files, and direct configuration.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
 
 
@@ -40,9 +40,55 @@ class Settings(BaseSettings):
         ... )
     """
 
-    # JWT settings for local provider
-    jwt_secret: str = "supersecret"
-    """Secret key for JWT signing and verification. Change this in production!"""
+    # JWT Configuration
+    jwt_secret: str = Field(
+        default="supersecret",
+        description="Secret key for JWT signing and verification. Change this in production!",
+    )
+    jwt_algorithm: str = Field(default="HS256", description="JWT signing algorithm")
+    jwt_access_token_expire_minutes: int = Field(
+        default=60, description="Access token expiration in minutes"
+    )
+    jwt_refresh_token_expire_days: int = Field(
+        default=7, description="Refresh token expiration in days"
+    )
+
+    # Security Configuration
+    token_issuer: Optional[str] = Field(
+        default=None, description="JWT token issuer claim"
+    )
+    token_audience: Optional[str] = Field(
+        default=None, description="JWT token audience claim"
+    )
+    enable_rate_limiting: bool = Field(
+        default=True, description="Enable API rate limiting"
+    )
+    rate_limit_requests_per_minute: int = Field(
+        default=60, description="Rate limit requests per minute"
+    )
+    max_login_attempts: int = Field(
+        default=5, description="Maximum failed login attempts before lockout"
+    )
+    lockout_duration_minutes: int = Field(
+        default=5, description="Account lockout duration in minutes"
+    )
+    require_https: bool = Field(
+        default=False, description="Require HTTPS in production"
+    )
+    enable_security_headers: bool = Field(
+        default=True, description="Enable security headers"
+    )
+
+    # Session Security
+    session_timeout_minutes: int = Field(
+        default=60, description="Session timeout in minutes"
+    )
+    admin_session_timeout_minutes: int = Field(
+        default=30, description="Admin session timeout in minutes"
+    )
+    enable_session_ip_validation: bool = Field(
+        default=True, description="Validate session IP consistency"
+    )
 
     jwt_algorithm: str = "HS256"
     """JWT signing algorithm. Supports HS256, RS256, etc."""
@@ -60,7 +106,7 @@ class Settings(BaseSettings):
     """
 
     # Provider-specific configuration (optional)
-    provider_config: Optional[Dict[str, Any]] = None
+    provider_config: Optional[dict[str, Any]] = None
     """
     Provider-specific configuration dictionary.
 
@@ -98,7 +144,7 @@ class Settings(BaseSettings):
         env_file=".env", env_prefix="MCP_AUTH_", case_sensitive=False, extra="forbid"
     )
 
-    def get_provider_config(self) -> Dict[str, Any]:
+    def get_provider_config(self) -> dict[str, Any]:
         """
         Get provider configuration with defaults.
 
@@ -128,7 +174,7 @@ class Settings(BaseSettings):
                 f"Must be one of: {valid_providers}"
             )
 
-        # Validate local provider settings
+        # Validate local provider settings with enhanced security
         if self.auth_provider == "local":
             if self.jwt_secret == "supersecret":
                 import warnings
@@ -137,6 +183,34 @@ class Settings(BaseSettings):
                     "Using default JWT secret in production is insecure! "
                     "Set MCP_AUTH_JWT_SECRET environment variable.",
                     UserWarning,
+                    stacklevel=2,
+                )
+
+            # Additional JWT secret validation
+            if len(self.jwt_secret) < 32:
+                import warnings
+
+                warnings.warn(
+                    "JWT secret should be at least 32 characters for production use!",
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+            # Check for common weak secrets
+            weak_secrets = [
+                "secret",
+                "password",
+                "supersecret",
+                "jwt_secret",
+                "change_me",
+            ]
+            if self.jwt_secret.lower() in weak_secrets:
+                import warnings
+
+                warnings.warn(
+                    "JWT secret appears to be a common/weak value. Use a strong, unique secret!",
+                    UserWarning,
+                    stacklevel=2,
                 )
 
         # Validate Redis settings

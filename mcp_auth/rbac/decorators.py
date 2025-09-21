@@ -10,7 +10,7 @@ import asyncio
 import logging
 import time
 from functools import wraps
-from typing import Callable, List, Optional, Union
+from typing import Callable, Optional, Union
 
 from fastapi import Depends, HTTPException, Request
 
@@ -114,7 +114,7 @@ def _extract_request_context(request: Request, principal: Principal) -> dict:
 
 
 def require_permissions(
-    permissions: Union[str, List[str]],
+    permissions: Union[str, list[str]],
     resource_id_param: Optional[str] = None,
     allow_empty_resource_id: bool = False,
 ):
@@ -312,7 +312,7 @@ def require_permissions(
     return decorator
 
 
-def require_roles(roles: Union[str, List[str]]):
+def require_roles(roles: Union[str, list[str]]):
     """
     Decorator to require specific roles for an endpoint
 

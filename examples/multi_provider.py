@@ -116,15 +116,22 @@ def create_env_configured_app():
     return app
 
 
+# Create app instances for direct import
+google_app = create_google_app()
+aws_app = create_aws_app()
+local_app = create_local_app_with_redis()
+env_app = create_env_configured_app()
+
+
 if __name__ == "__main__":
     # Choose which example to run
     app_type = os.getenv("APP_TYPE", "env")
 
     apps = {
-        "google": create_google_app(),
-        "aws": create_aws_app(),
-        "local": create_local_app_with_redis(),
-        "env": create_env_configured_app(),
+        "google": google_app,
+        "aws": aws_app,
+        "local": local_app,
+        "env": env_app,
     }
 
     app = apps.get(app_type, apps["env"])

@@ -12,7 +12,7 @@ This module defines the core data models used in the RBAC extension:
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 
 class AccessLevel(Enum):
@@ -218,9 +218,9 @@ class Role:
 
     name: str
     description: str
-    permissions: List[Permission] = field(default_factory=list)
-    inherits: Optional[List[str]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    permissions: list[Permission] = field(default_factory=list)
+    inherits: Optional[list[str]] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate role data after initialization."""
@@ -279,7 +279,7 @@ class Role:
                 return True
         return False
 
-    def get_permission_strings(self) -> List[str]:
+    def get_permission_strings(self) -> list[str]:
         """
         Get all permissions as strings.
 
@@ -318,7 +318,7 @@ class PermissionRequest:
     resource: str
     action: str
     resource_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    context: Optional[dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         """Validate request data after initialization."""
@@ -339,7 +339,7 @@ class PermissionRequest:
         """
         return Permission(self.resource, self.action, self.resource_id)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the request to a dictionary.
 
@@ -382,12 +382,12 @@ class AccessResult:
 
     allowed: bool
     reason: str
-    matched_permissions: List[Permission] = field(default_factory=list)
-    user_roles: List[str] = field(default_factory=list)
-    context: Optional[Dict[str, Any]] = None
+    matched_permissions: list[Permission] = field(default_factory=list)
+    user_roles: list[str] = field(default_factory=list)
+    context: Optional[dict[str, Any]] = None
     evaluated_at: Optional[str] = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the result to a dictionary.
 
@@ -435,7 +435,7 @@ class AccessPolicy:
     name: str
     description: str
     resource_pattern: str
-    conditions: Dict[str, Any] = field(default_factory=dict)
+    conditions: dict[str, Any] = field(default_factory=dict)
     effect: str = "allow"
     priority: int = 0
     custom_check: Optional[Callable] = None
@@ -476,7 +476,7 @@ class AccessPolicy:
         return True
 
     def evaluate(
-        self, permission: Permission, context: Optional[Dict[str, Any]] = None
+        self, permission: Permission, context: Optional[dict[str, Any]] = None
     ) -> bool:
         """
         Evaluate this policy against a permission request.

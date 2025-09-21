@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .models import Principal
 from .providers.base import AuthResult, Provider, ProviderError
@@ -10,9 +10,9 @@ from .providers.base import AuthResult, Provider, ProviderError
 
 @dataclass
 class _RequestLike:
-    headers: Dict[str, str]
-    cookies: Dict[str, str]
-    query_params: Dict[str, str]
+    headers: dict[str, str]
+    cookies: dict[str, str]
+    query_params: dict[str, str]
 
 
 async def authenticate_request(provider: Provider, request: Any) -> AuthResult:
@@ -54,7 +54,7 @@ def authenticate_request_sync(provider: Provider, request: Any) -> AuthResult:
     return _run_coro_sync(coro)
 
 
-async def token_to_principal(provider: Provider, token: str) -> Optional[Principal]:
+async def token_to_principal(provider: Provider, token: str) -> Principal | None:
     """Create a request-like object from a token and authenticate (async).
 
     Returns Principal on success or None.
@@ -70,7 +70,7 @@ async def token_to_principal(provider: Provider, token: str) -> Optional[Princip
     return None
 
 
-def token_to_principal_sync(provider: Provider, token: str) -> Optional[Principal]:
+def token_to_principal_sync(provider: Provider, token: str) -> Principal | None:
     """Sync wrapper for `token_to_principal`.
 
     Returns Principal on success or None.
@@ -79,7 +79,7 @@ def token_to_principal_sync(provider: Provider, token: str) -> Optional[Principa
     return _run_coro_sync(coro)
 
 
-def map_context_to_requestlike(ctx: Dict[str, Any]) -> _RequestLike:
+def map_context_to_requestlike(ctx: dict[str, Any]) -> _RequestLike:
     """Map a simple context/dict to the internal Request-like shape.
 
     Expected keys (optional): `headers`, `cookies`, `query_params`.

@@ -6,7 +6,7 @@ authentication system, providing a consistent interface for all providers.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -52,8 +52,8 @@ class Principal:
     provider: str
     name: Optional[str] = None
     email: Optional[str] = None
-    roles: Optional[List[str]] = None
-    raw: Optional[Dict[str, Any]] = None
+    roles: Optional[list[str]] = None
+    raw: Optional[dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         """Validate principal data after initialization."""
@@ -78,7 +78,7 @@ class Principal:
         """
         return self.roles is not None and role in self.roles
 
-    def has_any_role(self, roles: List[str]) -> bool:
+    def has_any_role(self, roles: list[str]) -> bool:
         """
         Check if the principal has any of the specified roles.
 
@@ -92,7 +92,7 @@ class Principal:
             return False
         return any(role in self.roles for role in roles)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert the principal to a dictionary representation.
 

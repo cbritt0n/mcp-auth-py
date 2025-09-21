@@ -2,6 +2,7 @@
 """
 Token generator utility for testing mcp-auth-py
 """
+
 import sys
 
 from mcp_auth.settings import Settings

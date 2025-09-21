@@ -14,8 +14,14 @@ Features:
 
 from .admin import create_rbac_admin_router, setup_rbac_admin
 from .decorators import require_access, require_permissions, require_roles
-from .engine import (AccessPolicy, Permission, RBACEngine, Role,
-                     get_rbac_engine, setup_default_roles)
+from .engine import (
+    AccessPolicy,
+    Permission,
+    RBACEngine,
+    Role,
+    get_rbac_engine,
+    setup_default_roles,
+)
 from .models import AccessResult, PermissionRequest
 
 __version__ = "0.1.0"

@@ -7,6 +7,7 @@ mcp-auth setu    print("\n🎯 Local setup complete!")
                 f"'{jwt_secret}', algorithm='HS256'))\"")
     print(token_cmd)tility - Quick configuration for different auth providers
 """
+
 import json
 import os
 
@@ -20,7 +21,7 @@ def create_env_file(provider: str, config: dict):
 JWT_SECRET={jwt_secret}
 JWT_ALGORITHM=HS256
 AUTH_PROVIDER={provider}
-REDIS_JWKS={str(config.get('redis_jwks', False)).lower()}
+REDIS_JWKS={str(config.get("redis_jwks", False)).lower()}
 """
 
     if config.get("redis_url"):

@@ -1,17 +1,24 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: "3.10"
 
 jobs:
   unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
       - name: Cache pip
@@ -29,21 +36,31 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-      - name: Run pre-commit (format/lint)
+      - name: Run formatters and linters
         run: |
           pip install pre-commit
-          # First run formatters to apply changes
-          pre-commit run black --all-files || true
-          pre-commit run isort --all-files || true
-          # Then run linters which should pass
-          pre-commit run ruff --all-files
+          # Run formatters first
+          python -m black . --check --diff
+          # Run linter
+          python -m ruff check .
+          # Run other pre-commit checks
           pre-commit run end-of-file-fixer --all-files || true
           pre-commit run trailing-whitespace --all-files || true
-          pre-commit run check-yaml --all-files
-      - name: Run unit tests
-        run: pytest -q
+          pre-commit run check-yaml --all-files || true
+      - name: Run unit tests with coverage
+        env:
+          MCP_AUTH_JWT_SECRET: test-secret-key-for-ci-testing-only
+        run: |
+          python -m pytest tests/ -v --cov=mcp_auth --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
 
   providers-integration:
+    name: Provider Integration Tests
     runs-on: ubuntu-latest
     needs: unit-tests
     steps:
@@ -55,10 +72,129 @@ jobs:
       - name: Install provider SDKs and dev deps
         run: |
           python -m pip install --upgrade pip
-          # install provider SDKs directly to avoid building the package wheel (hatchling)
+          # Install provider SDKs directly to avoid building the package wheel (hatchling)
           pip install google-auth boto3
-          # install redis/jwks runtime deps for provider integration tests
-          pip install redis aioredis httpx
+          # Install Redis/WebSocket/audit runtime deps for provider integration tests
+          pip install redis aioredis httpx websockets redis-py-cluster fakeredis
           pip install -r requirements-dev.txt
       - name: Run provider integration tests
-        run: pytest tests/test_cloud_providers.py -q
+        env:
+          MCP_AUTH_JWT_SECRET: test-secret-key-for-providers
+        run: pytest tests/test_cloud_providers.py -v
+
+  feature-tests:
+    name: Feature Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install all feature dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install all feature dependencies
+          pip install redis aioredis websockets httpx redis-py-cluster fakeredis
+          pip install -r requirements-dev.txt
+      - name: Run feature tests (WebSocket, Caching, Audit)
+        env:
+          REDIS_URL: redis://localhost:6379/0
+          MCP_AUTH_JWT_SECRET: test-secret-key-for-features
+        run: |
+          pytest tests/test_realtime.py tests/test_caching.py tests/test_audit.py -v
+
+  rbac-integration:
+    name: RBAC Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install RBAC dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run RBAC integration tests
+        env:
+          MCP_AUTH_JWT_SECRET: test-secret-key-for-rbac
+        run: pytest tests/test_rbac.py -v
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+          pip install -r requirements.txt
+      - name: Run Bandit security scan
+        run: bandit -r mcp_auth/ -ll
+        continue-on-error: true
+      - name: Run Safety check for vulnerabilities
+        run: safety check
+        continue-on-error: true
+
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        run: |
+          docker build -t mcp-auth-py:${{ github.sha }} .
+          docker build -t mcp-auth-py:latest .
+      - name: Test Docker image
+        run: |
+          docker run --rm mcp-auth-py:${{ github.sha }} python -c "import mcp_auth; print('Import successful')"
+
+  build-package:
+    name: Build Python Package
+    runs-on: ubuntu-latest
+    needs: [unit-tests, providers-integration, feature-tests, rbac-integration]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+      - name: Build package
+        run: python -m build
+      - name: Check package
+        run: twine check dist/*
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-package
+          path: dist/

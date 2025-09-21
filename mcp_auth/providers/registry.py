@@ -1,8 +1,6 @@
-from typing import Dict
-
 from .base import Provider
 
-_PROVIDERS: Dict[str, Provider] = {}
+_PROVIDERS: dict[str, Provider] = {}
 
 
 def register_provider(name: str, provider: Provider):

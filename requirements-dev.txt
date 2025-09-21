@@ -8,9 +8,19 @@ fastapi>=0.100.0
 uvicorn[standard]>=0.20.0
 httpx>=0.24.0
 
+# Real-time and caching dependencies for testing
+websockets>=11.0.0
+redis>=4.5.0
+aioredis>=2.0.0
+redis-py-cluster>=2.1.0
+
 # dev tools
 pre-commit>=3.0.0
 black>=23.0.0
 isort>=5.12.0
 ruff>=0.1.0
 fakeredis>=2.0.0
+
+# Testing tools for WebSocket and Redis
+pytest-redis>=2.4.0
+pytest-websockets>=0.1.0

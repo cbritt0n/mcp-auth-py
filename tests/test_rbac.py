@@ -6,8 +6,14 @@ from fastapi import Request
 from fastapi.testclient import TestClient
 
 from mcp_auth.models import Principal
-from mcp_auth.rbac import (Permission, PermissionRequest, RBACEngine, Role,
-                           get_rbac_engine, require_permissions)
+from mcp_auth.rbac import (
+    Permission,
+    PermissionRequest,
+    RBACEngine,
+    Role,
+    get_rbac_engine,
+    require_permissions,
+)
 from mcp_auth.rbac.engine import setup_default_roles
 
 

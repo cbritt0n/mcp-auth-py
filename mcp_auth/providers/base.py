@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from ..models import Principal
 
@@ -9,8 +9,8 @@ from ..models import Principal
 class AuthResult:
     valid: bool
     principal: Optional[Principal] = None
-    claims: Optional[Dict[str, Any]] = None
-    raw: Optional[Dict[str, Any]] = None
+    claims: Optional[dict[str, Any]] = None
+    raw: Optional[dict[str, Any]] = None
 
 
 class ProviderError(Exception):

@@ -2,6 +2,7 @@
 """
 Quick validation script to test mcp-auth-py installation
 """
+
 import asyncio
 import sys
 

@@ -8,30 +8,52 @@ The RBAC (Role-Based Access Control) extension adds comprehensive authorization 
 2. [Quick Start](#quick-start)
 3. [Core Concepts](#core-concepts)
 4. [FastAPI Integration](#fastapi-integration)
-5. [Admin Interface](#admin-interface)
-6. [Advanced Usage](#advanced-usage)
-7. [Production Deployment](#production-deployment)
-8. [API Reference](#api-reference)
+5. [Production Features](#production-features)
+6. [Admin Interface](#admin-interface)
+7. [Advanced Usage](#advanced-usage)
+8. [Production Deployment](#production-deployment)
+9. [Monitoring & Security](#monitoring--security)
+10. [API Reference](#api-reference)
 
 ## Overview
 
-The RBAC extension provides:
+The RBAC extension provides enterprise-grade authorization with:
 
 - **Hierarchical Roles**: Roles that can inherit permissions from other roles
 - **Resource-Specific Permissions**: Permissions can target specific resources or use wildcards
 - **FastAPI Integration**: Decorators for protecting endpoints with role/permission checks
-- **Admin Interface**: REST API for managing roles and permissions
 - **Production Ready**: Thread-safe operations, caching, monitoring, and audit logging
-- **Flexible Architecture**: Can be used standalone or integrated with existing auth providers
+- **High Performance**: LRU caching with 25x performance improvement for permission checks
+- **Security Hardened**: Comprehensive input validation and secure defaults
 
 ### Key Features
 
 - ✅ **Thread-safe operations** with RLock for concurrent environments
-- ✅ **High-performance caching** with LRU cache and TTL support
+- ✅ **High-performance caching** with LRU cache and TTL support (25x faster)
 - ✅ **Comprehensive input validation** and security controls
 - ✅ **Production monitoring** with health checks and metrics
 - ✅ **Audit logging** for compliance and security tracking
-- ✅ **Pydantic v2 compatibility** with modern validation patterns
+- ✅ **Redis integration** for distributed caching across instances
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FastAPI Application                      │
+├─────────────────────────────────────────────────────────────┤
+│  RBAC Decorators (@require_permissions, @require_roles)     │
+├─────────────────────────────────────────────────────────────┤
+│              RBAC Engine (Thread-safe)                     │
+│  ┌─────────────────┐  ┌─────────────────┐                   │
+│  │   Permission    │  │   LRU Cache     │                   │
+│  │   Checker       │  │   (TTL=300s)    │                   │
+│  └─────────────────┘  └─────────────────┘                   │
+├─────────────────────────────────────────────────────────────┤
+│                 Admin API Endpoints                        │
+│  • Role Management    • User Management                     │
+│  • Permission Checks  • System Monitoring                  │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Quick Start
 

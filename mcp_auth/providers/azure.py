@@ -9,8 +9,7 @@ from .oidc import JWKSCache, get_jwks_url_from_well_known
 
 # Default well-known URL template for Azure AD
 AZURE_WELL_KNOWN = (
-    "https://login.microsoftonline.com/{tenant}/v2.0/"
-    ".well-known/openid-configuration"
+    "https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration"
 )
 
 

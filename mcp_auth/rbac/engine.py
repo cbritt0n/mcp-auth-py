@@ -12,11 +12,10 @@ import threading
 import time
 from collections import OrderedDict
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Optional
 
 from ..models import Principal
-from .models import (AccessPolicy, AccessResult, Permission, PermissionRequest,
-                     Role)
+from .models import AccessPolicy, AccessResult, Permission, PermissionRequest, Role
 
 logger = logging.getLogger(__name__)
 
@@ -95,16 +94,16 @@ class RBACEngine:
         if cache_ttl <= 0 or cache_ttl > 86400:  # Max 24 hours
             raise ValueError("cache_ttl must be between 1 and 86,400 seconds")
 
-        self.roles: Dict[str, Role] = {}
-        self.policies: List[AccessPolicy] = []
-        self.user_roles: Dict[str, Set[str]] = {}  # user_id -> role names
+        self.roles: dict[str, Role] = {}
+        self.policies: list[AccessPolicy] = []
+        self.user_roles: dict[str, set[str]] = {}  # user_id -> role names
 
         # Production features
         self._lock = threading.RLock()  # Thread safety
         self._cache_size = cache_size
         self._cache_ttl = cache_ttl
         self._permission_cache: OrderedDict = OrderedDict()  # LRU cache
-        self._cache_timestamps: Dict[str, float] = {}
+        self._cache_timestamps: dict[str, float] = {}
 
         # Security and monitoring
         self._failed_validations = 0
@@ -216,12 +215,12 @@ class RBACEngine:
         )
 
     def _validate_role_inheritance_cycle(
-        self, new_role: str, inherits: List[str]
+        self, new_role: str, inherits: list[str]
     ) -> None:
         """Validate that role inheritance doesn't create cycles."""
         visited = set()
 
-        def check_cycle(role_name: str, path: Set[str]) -> None:
+        def check_cycle(role_name: str, path: set[str]) -> None:
             if role_name in path:
                 raise ValueError(
                     f"Role inheritance cycle detected: {' -> '.join(path)} -> {role_name}"
@@ -275,7 +274,7 @@ class RBACEngine:
         """
         return self.roles.get(role_name)
 
-    def list_roles(self) -> List[str]:
+    def list_roles(self) -> list[str]:
         """
         Get a list of all role names.
 
@@ -349,7 +348,7 @@ class RBACEngine:
             return True
         return False
 
-    def get_user_roles(self, user_id: str) -> List[str]:
+    def get_user_roles(self, user_id: str) -> list[str]:
         """
         Get all roles assigned to a user.
 
@@ -375,7 +374,7 @@ class RBACEngine:
         return role_name in self.user_roles.get(user_id, set())
 
     # Permission Management
-    def get_user_permissions(self, user_id: str) -> List[Permission]:
+    def get_user_permissions(self, user_id: str) -> list[Permission]:
         """
         Get all permissions for a user from their roles with inheritance.
 
@@ -391,7 +390,7 @@ class RBACEngine:
         permissions = []
         processed_roles = set()
 
-        def collect_permissions(role_names: List[str]) -> None:
+        def collect_permissions(role_names: list[str]) -> None:
             for role_name in role_names:
                 if role_name in processed_roles or role_name not in self.roles:
                     continue
@@ -462,7 +461,7 @@ class RBACEngine:
                 return True
         return False
 
-    def list_policies(self) -> List[str]:
+    def list_policies(self) -> list[str]:
         """
         Get a list of all policy names.
 
@@ -578,7 +577,7 @@ class RBACEngine:
 
     def _evaluate_policies(
         self, principal: Principal, request: PermissionRequest
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Evaluate all applicable access control policies.
 
@@ -625,7 +624,7 @@ class RBACEngine:
         resource: str,
         action: str,
         resource_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        context: Optional[dict[str, Any]] = None,
     ) -> bool:
         """
         High-performance permission check with caching and security validation.
@@ -706,7 +705,7 @@ class RBACEngine:
             return False
 
     # Statistics and Monitoring
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get comprehensive engine statistics for production monitoring.
 
@@ -791,7 +790,7 @@ class RBACEngine:
         logger.info(f"Cleared {cleared_count} cache entries")
         return cleared_count
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """
         Perform a health check of the RBAC engine.
 
@@ -905,8 +904,8 @@ def setup_default_roles(engine: RBACEngine) -> None:
         name="admin",
         description="Full system administrator with unrestricted access",
         permissions=[
-            Permission.from_string("*:*:*")  # Wildcard permission for everything
-        ],
+            Permission.from_string("*:*:*")
+        ],  # Wildcard permission for everything
         metadata={"system_role": True, "created_by": "setup_default_roles"},
     )
 

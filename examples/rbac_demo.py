@@ -95,15 +95,21 @@ Example admin endpoints:
 
 import logging
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from mcp_auth.rbac import (Permission, Role, get_rbac_engine, require_access,
-                           require_permissions, require_roles,
-                           setup_rbac_admin)
+from mcp_auth.rbac import (
+    Permission,
+    Role,
+    get_rbac_engine,
+    require_access,
+    require_permissions,
+    require_roles,
+    setup_rbac_admin,
+)
 from mcp_auth.settings import Settings
 from mcp_auth.setup import setup_auth
 
@@ -178,7 +184,7 @@ class BlogPost(BaseModel):
     content: str
     author_id: str
     published: bool = False
-    tags: List[str] = []
+    tags: list[str] = []
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -200,14 +206,14 @@ class UserProfile(BaseModel):
     id: str
     name: Optional[str] = None
     email: Optional[str] = None
-    roles: List[str] = []
+    roles: list[str] = []
     created_at: Optional[str] = None
 
 
 # Simple in-memory storage for demo purposes
-blog_posts: Dict[str, BlogPost] = {}
-comments: Dict[str, Comment] = {}
-user_profiles: Dict[str, UserProfile] = {}
+blog_posts: dict[str, BlogPost] = {}
+comments: dict[str, Comment] = {}
+user_profiles: dict[str, UserProfile] = {}
 
 # ================== RBAC SETUP ==================
 
