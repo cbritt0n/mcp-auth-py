@@ -4,14 +4,14 @@ FROM python:3.11-slim AS builder
 WORKDIR /build
 
 # Install build dependencies
-RUN pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip setuptools wheel build
 
 # Copy package files
 COPY pyproject.toml README.md ./
 COPY mcp_auth/ ./mcp_auth/
 
 # Build the package
-RUN pip wheel . --wheel-dir=/build/wheels --no-deps
+RUN python -m build --wheel --outdir /build/wheels
 
 # Production image
 FROM python:3.11-slim AS production
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy built wheel and install
 COPY --from=builder /build/wheels/*.whl /tmp/
-RUN pip install --no-cache-dir /tmp/*.whl[all] uvicorn[standard] \
+RUN pip install --no-cache-dir /tmp/mcp_auth_py-*.whl[all] uvicorn[standard] \
     && rm -rf /tmp/*.whl
 
 # Copy application
@@ -37,7 +37,7 @@ USER app
 # Configuration
 ENV PYTHONUNBUFFERED=1
 ENV AUTH_PROVIDER=local
-ENV JWT_SECRET=change-this-in-production
+# JWT_SECRET should be set at runtime via docker run -e JWT_SECRET=your-secret-here
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
