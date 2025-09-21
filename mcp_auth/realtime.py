@@ -125,13 +125,18 @@ class ConnectionManager:
         self.connection_info: dict[str, ConnectionInfo] = {}
         self.user_connections: dict[str, set[str]] = {}  # user_id -> connection_ids
         self.redis: Optional[Any] = None  # aioredis.Redis when available
-        self._lock = asyncio.Lock()
+        self._lock = None  # Lazy-initialized when first async method is called
         self._stats = {
             "total_connections": 0,
             "active_connections": 0,
             "events_sent": 0,
             "events_received": 0,
         }
+
+    def _ensure_lock(self):
+        """Ensure the async lock is initialized"""
+        if self._lock is None:
+            self._lock = asyncio.Lock()
 
     async def initialize_redis(self, redis_url: str = "redis://localhost:6379"):
         """Initialize Redis connection for distributed event broadcasting"""
@@ -181,6 +186,7 @@ class ConnectionManager:
         connection_id = str(uuid.uuid4())
         now = datetime.utcnow()
 
+        self._ensure_lock()
         async with self._lock:
             self.connections[connection_id] = websocket
             self.connection_info[connection_id] = ConnectionInfo(
@@ -230,6 +236,7 @@ class ConnectionManager:
 
     async def disconnect(self, connection_id: str):
         """Disconnect a WebSocket connection"""
+        self._ensure_lock()
         async with self._lock:
             if connection_id not in self.connections:
                 return
