@@ -45,7 +45,7 @@ class CacheKey:
     def _hash_key(*parts: str) -> str:
         """Create a hash from key parts for consistent short keys"""
         key_string = ":".join(str(part) for part in parts if part is not None)
-        return hashlib.md5(key_string.encode()).hexdigest()[:16]
+        return hashlib.md5(key_string.encode(), usedforsecurity=False).hexdigest()[:16]
 
     @classmethod
     def permission_check(
