@@ -36,8 +36,8 @@ USER app
 
 # Configuration
 ENV PYTHONUNBUFFERED=1
-ENV AUTH_PROVIDER=local
-# JWT_SECRET should be set at runtime via docker run -e JWT_SECRET=your-secret-here
+# Set runtime configuration via environment variables:
+# docker run -e MCP_AUTH_PROVIDER=local -e MCP_AUTH_JWT_SECRET=your-secret-here
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
