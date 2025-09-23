@@ -1,5 +1,27 @@
 """
-Docker deployment example for mcp-auth-py
+Docker Deployment Example - Production-ready containerized MCP Auth server.
+
+This example demonstrates how to deploy mcp-auth-py in a Docker container
+with production-ready configuration including:
+
+1. Environment variable configuration
+2. Health check endpoints for orchestration
+3. Security-focused settings
+4. Container-optimized logging
+
+Build and run:
+    docker build -t mcp-auth-server .
+    docker run -p 8000:8000 \
+        -e AUTH_PROVIDER=google \
+        -e PROVIDER_CONFIG='{"audience": "your-client-id"}' \
+        mcp-auth-server
+
+Environment variables:
+    - AUTH_PROVIDER: Authentication provider (local, google, aws, azure)
+    - PROVIDER_CONFIG: JSON configuration for the provider
+    - JWT_SECRET: Secret key for JWT signing
+    - REDIS_JWKS: Enable Redis JWKS caching (true/false)
+    - REDIS_URL: Redis connection URL
 """
 
 from fastapi import FastAPI, Request

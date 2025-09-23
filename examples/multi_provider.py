@@ -1,5 +1,20 @@
 """
-Multi-provider example showing different authentication methods
+Multi-Provider Authentication Example - Comprehensive guide for different auth providers.
+
+This example demonstrates how to configure mcp-auth-py with different authentication
+providers including Google OAuth2, AWS Cognito, Azure AD, and local JWT.
+
+Each example shows:
+1. Provider-specific configuration
+2. FastAPI app setup
+3. Protected endpoint examples
+4. User data access patterns
+
+Usage:
+    # Run specific provider example:
+    uvicorn examples.multi_provider:google_app --port 8000
+    uvicorn examples.multi_provider:aws_app --port 8001
+    uvicorn examples.multi_provider:azure_app --port 8002
 """
 
 import os

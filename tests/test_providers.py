@@ -7,7 +7,11 @@ from mcp_auth.settings import Settings
 from mcp_auth.setup import setup_auth
 
 app = FastAPI()
-settings = Settings()
+settings = Settings(
+    auth_provider="local",
+    jwt_secret="test-secret-key-for-testing-purposes-only",
+    provider_config={},
+)
 # register local provider to mirror existing behavior
 register_provider("local", LocalProvider(settings))
 app = setup_auth(app, settings=settings)

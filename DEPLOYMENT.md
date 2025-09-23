@@ -54,7 +54,7 @@ cd mcp-auth-py
 pip install -e .[all]
 
 # Quick setup
-python scripts/setup.py
+python tests/setup_wizard.py
 
 # Run development server
 uvicorn examples.complete_app:app --reload
@@ -212,6 +212,6 @@ export PYTHONPATH=debug
 curl http://localhost:8000/health
 
 # Full authentication test
-curl -H "Authorization: Bearer $(python scripts/generate_token.py)" \
+curl -H "Authorization: Bearer $(python tests/generate_token.py)" \
      http://localhost:8000/me
 ```

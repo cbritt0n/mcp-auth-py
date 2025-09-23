@@ -32,8 +32,6 @@ from mcp_auth.security import (
     get_validated_principal,
     require_admin_principal,
 )
-
-# MCP Auth imports
 from mcp_auth.settings import Settings
 
 # Configure logging for production
@@ -49,7 +47,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan with proper initialization and cleanup"""
-    logger.info("Starting MCP Auth production application...")
+    logger.info("=" * 50)
+    logger.info("MCP Auth Production Server Starting...")
+    logger.info("=" * 50)
 
     try:
         # Initialize all systems
@@ -60,6 +60,15 @@ async def lifespan(app: FastAPI):
         rbac_engine = get_rbac_engine()
         await setup_sample_rbac_data(rbac_engine)
 
+        logger.info("Security Features Enabled:")
+        logger.info(f"  - Rate Limiting: {settings.enable_rate_limiting}")
+        logger.info(f"  - Security Headers: {settings.enable_security_headers}")
+        logger.info(f"  - HTTPS Required: {settings.require_https}")
+        logger.info(
+            f"  - JWT Expiration: {settings.jwt_access_token_expire_minutes} minutes"
+        )
+        logger.info(f"  - Max Login Attempts: {settings.max_login_attempts}")
+        logger.info("=" * 50)
         logger.info("MCP Auth production application started successfully")
 
         yield
@@ -116,29 +125,42 @@ connection_manager = ConnectionManager()
 async def setup_sample_rbac_data(rbac_engine) -> None:
     """Setup sample RBAC data for demonstration"""
     try:
+        from mcp_auth.rbac.models import Permission, Role
+
         # Create sample roles
-        await rbac_engine.create_role("admin", "System Administrator")
-        await rbac_engine.create_role("user", "Regular User")
-        await rbac_engine.create_role("moderator", "Content Moderator")
+        admin_role = Role(
+            name="admin",
+            description="System Administrator",
+            permissions=[Permission.from_string("*:*:*")],
+        )
 
-        # Assign permissions to roles
-        admin_permissions = ["users.*", "documents.*", "admin.access"]
-        user_permissions = ["documents.read", "users.read"]
-        moderator_permissions = ["documents.*", "moderator.access"]
+        user_role = Role(
+            name="user",
+            description="Regular User",
+            permissions=[
+                Permission.from_string("documents:read"),
+                Permission.from_string("users:read"),
+            ],
+        )
 
-        for perm in admin_permissions:
-            await rbac_engine.grant_permission_to_role("admin", perm)
+        moderator_role = Role(
+            name="moderator",
+            description="Content Moderator",
+            permissions=[
+                Permission.from_string("documents:*:*"),
+                Permission.from_string("moderator:access"),
+            ],
+        )
 
-        for perm in user_permissions:
-            await rbac_engine.grant_permission_to_role("user", perm)
-
-        for perm in moderator_permissions:
-            await rbac_engine.grant_permission_to_role("moderator", perm)
+        # Add roles to engine
+        rbac_engine.add_role(admin_role)
+        rbac_engine.add_role(user_role)
+        rbac_engine.add_role(moderator_role)
 
         # Assign sample users to roles (in production, this comes from your user management system)
-        await rbac_engine.assign_role_to_user("admin_user", "admin")
-        await rbac_engine.assign_role_to_user("regular_user", "user")
-        await rbac_engine.assign_role_to_user("mod_user", "moderator")
+        rbac_engine.assign_role("admin_user", "admin")
+        rbac_engine.assign_role("regular_user", "user")
+        rbac_engine.assign_role("mod_user", "moderator")
 
         logger.info("Sample RBAC data initialized")
 
@@ -308,7 +330,7 @@ async def get_admin_stats(principal: Principal = Depends(require_admin_principal
     security_monitor = get_security_monitor()
 
     stats = {
-        "rbac": await rbac_engine.get_engine_stats(),
+        "rbac": rbac_engine.health_check(),
         "cache": cache.get_stats() if cache else None,
         "security": security_monitor.get_security_summary(),
     }
@@ -422,22 +444,7 @@ async def websocket_endpoint(websocket):
 app.include_router(realtime_router, prefix="/realtime", tags=["realtime"])
 
 
-# Production startup message
-@app.on_event("startup")
-async def startup_message():
-    """Log production startup information"""
-    logger.info("=" * 50)
-    logger.info("MCP Auth Production Server Started")
-    logger.info("=" * 50)
-    logger.info("Security Features Enabled:")
-    logger.info(f"  - Rate Limiting: {settings.enable_rate_limiting}")
-    logger.info(f"  - Security Headers: {settings.enable_security_headers}")
-    logger.info(f"  - HTTPS Required: {settings.require_https}")
-    logger.info(
-        f"  - JWT Expiration: {settings.jwt_access_token_expire_minutes} minutes"
-    )
-    logger.info(f"  - Max Login Attempts: {settings.max_login_attempts}")
-    logger.info("=" * 50)
+# Production startup message is now handled in the lifespan function above
 
 
 if __name__ == "__main__":

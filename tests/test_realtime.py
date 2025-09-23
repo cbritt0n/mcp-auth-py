@@ -7,7 +7,7 @@ connection management, and real-time RBAC event notifications.
 
 import json
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
@@ -50,13 +50,15 @@ def mock_redis():
     """Mock Redis connection"""
     mock_redis = AsyncMock()
     mock_redis.ping = AsyncMock(return_value=True)
-    mock_redis.pubsub = AsyncMock()
     mock_redis.publish = AsyncMock()
 
-    mock_pubsub = AsyncMock()
-    mock_pubsub.subscribe = AsyncMock()
-    mock_pubsub.listen = AsyncMock()
-    mock_redis.pubsub.return_value = mock_pubsub
+    # Create a proper mock pubsub that behaves like aioredis
+    mock_pubsub = MagicMock()  # Use MagicMock for synchronous methods
+    mock_pubsub.subscribe = AsyncMock(return_value=None)  # subscribe is async
+    mock_pubsub.listen = AsyncMock()  # listen is async
+
+    # pubsub() itself returns immediately (not async)
+    mock_redis.pubsub = MagicMock(return_value=mock_pubsub)
 
     return mock_redis
 
@@ -105,14 +107,23 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_redis_initialization(self, connection_mgr, mock_redis):
         """Test Redis initialization"""
-        with patch("mcp_auth.realtime.aioredis") as mock_aioredis:
-            mock_aioredis.from_url.return_value = mock_redis
+        with (
+            patch("mcp_auth.realtime.aioredis") as mock_aioredis,
+            patch("mcp_auth.realtime.asyncio.create_task") as mock_create_task,
+        ):
+            mock_aioredis.from_url = AsyncMock(return_value=mock_redis)
 
             await connection_mgr.initialize_redis("redis://test:6379")
 
-            mock_aioredis.from_url.assert_called_once()
+            # Verify from_url was called
+            mock_aioredis.from_url.assert_called_once_with(
+                "redis://test:6379", decode_responses=True
+            )
+            # Verify Redis methods were called
             mock_redis.ping.assert_called_once()
             mock_redis.pubsub.assert_called_once()
+            # Verify background task was created
+            mock_create_task.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_redis_initialization_failure(self, connection_mgr):

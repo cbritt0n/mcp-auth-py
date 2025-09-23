@@ -45,7 +45,48 @@ services:
     depends_on:
       - redis
 
-  # Redis for JWKS caching
+  # GitHub OAuth2 example
+  mcp-auth-github:
+    build: .
+    ports:
+      - "8003:8000"
+    environment:
+      - AUTH_PROVIDER=github
+      - PROVIDER_CONFIG={"client_id":"your_github_client_id","allowed_organizations":["your-org"]}
+      - REDIS_JWKS=true
+      - REDIS_URL=redis://redis:6379/3
+    depends_on:
+      - redis
+
+  # Discord OAuth2 example
+  mcp-auth-discord:
+    build: .
+    ports:
+      - "8004:8000"
+    environment:
+      - AUTH_PROVIDER=discord
+      - PROVIDER_CONFIG={"client_id":"your_discord_client_id","allowed_guilds":["123456789012345678"]}
+      - REDIS_JWKS=true
+      - REDIS_URL=redis://redis:6379/4
+    depends_on:
+      - redis
+
+  # Enterprise multi-tenant example
+  mcp-auth-enterprise:
+    build: .
+    ports:
+      - "8005:8000"
+    environment:
+      - AUTH_PROVIDER=local
+      - TENANT_STRATEGY=row_level_security
+      - TENANT_RESOLVER=header
+      - ENABLE_PERFORMANCE_MONITORING=true
+      - ENABLE_COMPLIANCE_MONITORING=true
+      - REDIS_URL=redis://redis:6379/5
+    depends_on:
+      - redis
+
+  # Redis for JWKS caching and enterprise features
   redis:
     image: redis:7-alpine
     ports:
@@ -70,6 +111,9 @@ services:
       - mcp-auth-local
       - mcp-auth-aws
       - mcp-auth-google
+      - mcp-auth-github
+      - mcp-auth-discord
+      - mcp-auth-enterprise
 
 volumes:
   redis_data:

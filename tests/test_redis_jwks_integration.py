@@ -45,6 +45,9 @@ def test_redis_jwks_store_and_fetch(monkeypatch, tmp_path):
         redis_url="redis://fake",
     )
 
+    # Make sure the Redis client is properly initialized
+    adapter._client = fake_client
+
     jwks = adapter.get_jwks()
     assert jwks == jwks_data
 

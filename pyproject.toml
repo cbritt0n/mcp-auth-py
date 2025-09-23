@@ -5,14 +5,16 @@ build-backend = "hatchling.build"
 [project]
 name = "mcp-auth-py"
 version = "0.1.0"
-description = "🔐 Pluggable authentication for FastAPI/ASGI — swap providers (local/Google/AWS/Azure), async-capable, with JWKS caching"
+description = "🔐 Enterprise authentication for FastAPI/ASGI — Multi-provider OAuth2 (Google/AWS/Azure/GitHub/Discord), RBAC, multi-tenancy, compliance monitoring"
 authors = [{ name = "Christian Britton", email = "cbritt0n@users.noreply.github.com" }]
 license = { text = "Apache-2.0" }
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = [
     "authentication", "fastapi", "jwt", "oauth2", "aws-cognito",
-    "google-auth", "azure-ad", "asgi", "middleware", "mcp"
+    "google-auth", "azure-ad", "github-oauth", "discord-oauth",
+    "rbac", "multi-tenant", "enterprise", "compliance",
+    "asgi", "middleware", "mcp", "security"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -50,6 +52,13 @@ google = ["google-auth>=2.15.0"]
 aws = ["boto3>=1.26.0"]
 azure = []  # Azure provider uses OIDC JWKS validation only
 
+# GitHub and Discord OAuth2 providers (built-in, no extra dependencies)
+github = ["httpx>=0.24.0"]
+discord = ["httpx>=0.24.0"]
+
+# Enterprise multi-tenancy features
+enterprise = ["redis>=4.5.0", "httpx>=0.24.0"]
+
 # Redis JWKS caching for better performance
 redis_jwks = ["redis>=4.5.0", "httpx>=0.24.0"]
 
@@ -65,6 +74,9 @@ caching = ["redis>=4.5.0"]
 # RBAC Extension for role-based access control
 rbac = []  # No additional dependencies required
 
+# Production security features
+security = ["httpx>=0.24.0", "redis>=4.5.0"]
+
 # Development dependencies
 dev = [
     "pytest>=7.0.0",
@@ -77,23 +89,18 @@ dev = [
     "pre-commit>=3.0.0",
     "pytest-redis>=2.4.0",
     "httpx>=0.24.0",
+    "pytest-cov>=4.0.0",
 ]
 
 # Install all providers at once
-all = ["google-auth>=2.15.0", "boto3>=1.26.0"]
+all = ["google-auth>=2.15.0", "boto3>=1.26.0", "httpx>=0.24.0"]
 
 # Full installation with all features
 full = [
-    "google-auth>=2.15.0", "boto3>=1.26.0",
-    "redis>=4.5.0", "httpx>=0.24.0",
-    "websockets>=11.0.0",
+    "google-auth>=2.15.0", "boto3>=1.26.0", "httpx>=0.24.0",
+    "redis>=4.5.0", "websockets>=11.0.0",
     "uvicorn[standard]>=0.20.0"
 ]
-
-[project.scripts]
-mcp-auth-setup = "mcp_auth.scripts.setup:main"
-mcp-auth-generate-token = "mcp_auth.scripts.generate_token:main"
-mcp-auth-validate = "mcp_auth.scripts.validate_install:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["mcp_auth"]

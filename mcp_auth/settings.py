@@ -5,9 +5,10 @@ This module defines the configuration schema using Pydantic settings,
 supporting environment variables, .env files, and direct configuration.
 """
 
+import json
 from typing import Any, Optional
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -129,6 +130,17 @@ class Settings(BaseSettings):
         - audience: Application Client ID
     """
 
+    @field_validator("provider_config", mode="before")
+    @classmethod
+    def parse_provider_config(cls, v):
+        """Parse provider_config from JSON string if needed."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v) if v.strip() else None
+            except json.JSONDecodeError:
+                raise ValueError(f"Invalid JSON in provider_config: {v}")
+        return v
+
     # Redis JWKS caching settings (optional)
     redis_jwks: bool = False
     """Enable Redis-backed JWKS caching for improved performance across processes."""
@@ -186,8 +198,8 @@ class Settings(BaseSettings):
                     stacklevel=2,
                 )
 
-            # Additional JWT secret validation
-            if len(self.jwt_secret) < 32:
+            # Additional JWT secret validation - only warn if not in debug mode
+            if len(self.jwt_secret) < 32 and not self.debug:
                 import warnings
 
                 warnings.warn(

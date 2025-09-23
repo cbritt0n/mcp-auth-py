@@ -10,8 +10,9 @@ registry so you can swap in authentication backends for Local (JWT), Google, AWS
 and Azure (AAD) without changing application code.
 
 ## Why use mcp-auth-py?
-- Plug-and-play providers: swap `local`, `google`, `aws` (Cognito), or `azure` without changing app code.
-- Cloud-aware: supports Google ID tokens, AWS Cognito OIDC, and Azure AD OIDC out of the box.
+- Plug-and-play providers: swap `local`, `google`, `aws` (Cognito), `azure`, `github`, or `discord` without changing app code.
+- Cloud-aware: supports Google ID tokens, AWS Cognito OIDC, Azure AD OIDC, GitHub OAuth2, and Discord OAuth2 out of the box.
+- Enterprise ready: Multi-tenant architecture, compliance monitoring (GDPR, HIPAA, SOX), and performance optimization.
 - Async-friendly: middleware and providers can be async; blocking SDKs are offloaded to threadpools.
 - JWKS caching: per-process TTL cache plus an optional Redis-backed JWKS adapter for multi-process sharing.
 - Minimal core deps: keep your app light; provider SDKs are optional extras you install as needed.
@@ -28,12 +29,14 @@ What this library does
 - **Audit & Compliance**: Complete audit trail with security analytics and compliance reporting
 
 ## Features
-- **🔐 Multi-Provider Authentication**: Swap between local JWT, Google OAuth2, AWS Cognito, Azure AD without code changes
+- **🔐 Multi-Provider Authentication**: Local JWT, Google OAuth2, AWS Cognito, Azure AD, GitHub OAuth2, Discord OAuth2
+- **🏢 Enterprise Multi-Tenancy**: Database/schema isolation, hierarchical organizations, conditional access policies
 - **🛡️ Production Security**: Enterprise-grade JWT validation, rate limiting, brute force protection, security headers
-- **⚡ High Performance**: Redis-based distributed caching with 25x performance improvement for authorization
+- **📋 Compliance Monitoring**: Automated GDPR, HIPAA, SOX compliance with real-time assessments and reporting
+- **⚡ High Performance**: Redis-based distributed caching with circuit breakers and performance monitoring
 - **🚀 RBAC System**: Complete role-based access control with hierarchical permissions and resource-specific authorization
 - **📡 Real-time Updates**: WebSocket-based live notifications for security events and permission changes
-- **📊 Audit & Compliance**: Comprehensive audit trail with security analytics and compliance reporting (SOX, GDPR, HIPAA)
+- **📊 Audit & Compliance**: Comprehensive audit trail with security analytics and compliance reporting
 - **🔧 Developer Friendly**: Async-capable flows, FastAPI decorators, comprehensive examples and documentation
 - **☁️ Cloud Native**: Kubernetes deployments, Docker support, production-ready configurations
 
@@ -65,10 +68,13 @@ pip install -e .
 pip install -e .[google]        # Google OAuth2
 pip install -e .[aws]           # AWS Cognito
 pip install -e .[azure]         # Azure AD
+pip install -e .[github]        # GitHub OAuth2 (built-in)
+pip install -e .[discord]       # Discord OAuth2 (built-in)
 pip install -e .[redis_jwks]    # Redis caching
 pip install -e .[rbac]          # RBAC Extension
 pip install -e .[realtime]      # WebSocket real-time features
 pip install -e .[audit]         # Audit trail and analytics
+pip install -e .[enterprise]    # Multi-tenant enterprise features
 
 ```bash
 # All providers + RBAC + Real-time + Audit + Security
@@ -161,10 +167,13 @@ mcp-auth-py uses optional dependencies for cloud providers to keep the core pack
 pip install -e .[google]        # Google OAuth2 (google-auth)
 pip install -e .[aws]           # AWS Cognito (boto3)
 pip install -e .[azure]         # Azure AD (OIDC only, no extra deps)
+pip install -e .[github]        # GitHub OAuth2 (built-in, no extra deps)
+pip install -e .[discord]       # Discord OAuth2 (built-in, no extra deps)
 pip install -e .[redis_jwks]    # Redis JWKS caching
+pip install -e .[enterprise]    # Multi-tenant enterprise features
 
 # Or install everything
-pip install -e .[full]          # All providers + Redis + uvicorn
+pip install -e .[full]          # All providers + Redis + uvicorn + enterprise
 ```
 
 ## Async support & production readiness
@@ -246,6 +255,117 @@ settings = Settings(
     provider_config={"tenant": "your-tenant-id", "audience": "APP_CLIENT_ID"},
 )
 ```
+
+### GitHub OAuth2
+
+```python
+settings = Settings(
+    auth_provider="github",
+    provider_config={
+        "client_id": "your_github_client_id",
+        "client_secret": "your_github_client_secret",  # Optional
+        "scopes": ["user:email", "read:org"],
+        "allowed_organizations": ["your-org", "partner-org"],  # Optional
+    },
+)
+```
+
+### Discord OAuth2
+
+```python
+settings = Settings(
+    auth_provider="discord",
+    provider_config={
+        "client_id": "your_discord_client_id",
+        "client_secret": "your_discord_client_secret",  # Optional
+        "bot_token": "your_discord_bot_token",  # Optional, for role verification
+        "scopes": ["identify", "email", "guilds"],
+        "allowed_guilds": ["123456789012345678"],  # Optional server restrictions
+    },
+)
+```
+
+## 🏢 **Enterprise Multi-Tenancy**
+
+MCP Auth provides enterprise-grade multi-tenancy with multiple isolation strategies:
+
+### Setup Enterprise Features
+```bash
+# Install enterprise features
+pip install -e .[enterprise]
+
+# Configure multi-tenancy
+python tests/setup_wizard.py  # Choose option 7: Enterprise
+```
+
+### Multi-Tenant Configuration
+```python
+from mcp_auth.enterprise import MultiTenantAuth, TenantStrategy
+from mcp_auth.enterprise.compliance import ComplianceMonitor
+
+# Configure tenant isolation strategy
+settings = Settings(
+    auth_provider="google",  # Any provider works
+    tenant_strategy=TenantStrategy.ROW_LEVEL_SECURITY,  # or DATABASE_PER_TENANT, SCHEMA_PER_TENANT
+    tenant_resolver="header",  # header, subdomain, path, jwt
+    redis_url="redis://localhost:6379/0"
+)
+
+# Setup multi-tenant authentication
+app = FastAPI()
+tenant_auth = MultiTenantAuth(settings)
+app = tenant_auth.setup_app(app)
+
+# Compliance monitoring
+compliance = ComplianceMonitor(settings)
+app.include_router(compliance.get_router(), prefix="/compliance")
+
+@app.get("/api/data")
+async def get_tenant_data(
+    principal=Depends(get_validated_principal),
+    tenant=Depends(get_current_tenant)
+):
+    # Automatic tenant isolation based on strategy
+    return {
+        "tenant_id": tenant.id,
+        "user": principal.name,
+        "isolation": tenant.strategy.value
+    }
+```
+
+### Multi-Tenancy Features
+- **Flexible Isolation**: Database-per-tenant, schema-per-tenant, or row-level security
+- **Hierarchical Organizations**: Parent-child tenant relationships with inherited permissions
+- **Conditional Access Policies**: IP restrictions, time-based access, device requirements
+- **Tenant Administration**: REST APIs for tenant management and configuration
+- **Performance Optimization**: Tenant-aware caching and connection pooling
+- **Compliance Integration**: Automated tenant-level compliance monitoring
+
+See **[docs/enterprise_guide.md](docs/enterprise_guide.md)** for complete enterprise setup and **[examples/enterprise_demo.py](examples/enterprise_demo.py)** for working examples.
+
+## 🔧 **Quick Setup Wizard**
+
+Use the interactive setup wizard to configure any provider:
+
+```bash
+# Run the setup wizard
+python tests/setup_wizard.py
+
+# Choose your provider:
+# 1. Local (JWT with secret key)
+# 2. Google (OAuth2)
+# 3. AWS (Cognito)
+# 4. Azure (Active Directory)
+# 5. GitHub (OAuth2)
+# 6. Discord (OAuth2)
+# 7. Enterprise (Multi-tenant)
+```
+
+The wizard will:
+- Generate secure `.env` configuration files
+- Walk you through provider-specific setup (OAuth apps, client IDs, etc.)
+- Configure optional features (Redis caching, enterprise features)
+- Provide next steps and testing commands
 
 ## Using Redis-backed JWKS cache
 

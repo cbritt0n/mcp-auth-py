@@ -147,7 +147,7 @@ class ConnectionManager:
             return
 
         try:
-            self.redis = aioredis.from_url(redis_url, decode_responses=True)
+            self.redis = await aioredis.from_url(redis_url, decode_responses=True)
             await self.redis.ping()
 
             # Subscribe to RBAC events channel
