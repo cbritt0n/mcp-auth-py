@@ -10,7 +10,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from fastapi import HTTPException, Request
 from pydantic import BaseModel, Field
@@ -68,19 +68,19 @@ class TenantConfig(BaseModel):
     expires_at: Optional[datetime] = None
 
     # Authentication settings
-    auth_settings: Dict[str, Any] = Field(default_factory=dict)
+    auth_settings: dict[str, Any] = Field(default_factory=dict)
 
     # RBAC settings
-    rbac_settings: Dict[str, Any] = Field(default_factory=dict)
+    rbac_settings: dict[str, Any] = Field(default_factory=dict)
 
     # Security settings
-    security_settings: Dict[str, Any] = Field(default_factory=dict)
+    security_settings: dict[str, Any] = Field(default_factory=dict)
 
     # Resource limits
-    limits: Dict[str, Any] = Field(default_factory=dict)
+    limits: dict[str, Any] = Field(default_factory=dict)
 
     # Custom attributes
-    attributes: Dict[str, Any] = Field(default_factory=dict)
+    attributes: dict[str, Any] = Field(default_factory=dict)
 
     class Config:
         use_enum_values = True
@@ -98,11 +98,11 @@ class OrganizationConfig(BaseModel):
     path: str = ""  # Full path from root
 
     # Organization-specific settings
-    settings: Dict[str, Any] = Field(default_factory=dict)
+    settings: dict[str, Any] = Field(default_factory=dict)
 
     # RBAC inheritance rules
-    inherit_roles: List[str] = Field(default_factory=list)
-    local_roles: List[str] = Field(default_factory=list)
+    inherit_roles: list[str] = Field(default_factory=list)
+    local_roles: list[str] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -136,7 +136,7 @@ class TenantContext:
         return self.config.status == TenantStatus.TRIAL
 
     @property
-    def plan_limits(self) -> Dict[str, Any]:
+    def plan_limits(self) -> dict[str, Any]:
         """Get plan-specific limits"""
         base_limits = {
             TenantPlan.STARTER: {
@@ -245,8 +245,8 @@ class TenantManager:
         self.redis = None
 
         # In-memory storage (for development/testing)
-        self._tenants: Dict[str, TenantConfig] = {}
-        self._organizations: Dict[str, OrganizationConfig] = {}
+        self._tenants: dict[str, TenantConfig] = {}
+        self._organizations: dict[str, OrganizationConfig] = {}
         self._lock = None
 
     def _ensure_lock(self):
@@ -303,7 +303,7 @@ class TenantManager:
         return self._tenants.get(tenant_id)
 
     async def update_tenant(
-        self, tenant_id: str, updates: Dict[str, Any]
+        self, tenant_id: str, updates: dict[str, Any]
     ) -> TenantConfig:
         """Update tenant configuration"""
         tenant = await self.get_tenant(tenant_id)
@@ -342,7 +342,7 @@ class TenantManager:
 
     async def list_tenants(
         self, status: Optional[TenantStatus] = None
-    ) -> List[TenantConfig]:
+    ) -> list[TenantConfig]:
         """List all tenants, optionally filtered by status"""
         tenants = []
 
@@ -426,7 +426,7 @@ class TenantManager:
 
         return self._organizations.get(org_id)
 
-    async def list_organizations(self, tenant_id: str) -> List[OrganizationConfig]:
+    async def list_organizations(self, tenant_id: str) -> list[OrganizationConfig]:
         """List organizations for tenant"""
         organizations = []
 
@@ -500,7 +500,7 @@ class MultiTenantAuth:
         self.require_tenant = require_tenant
 
         # Tenant-specific configurations cache
-        self._tenant_cache: Dict[str, Dict[str, Any]] = {}
+        self._tenant_cache: dict[str, dict[str, Any]] = {}
         self._cache_lock = None
 
     def _ensure_lock(self):
@@ -562,7 +562,7 @@ class MultiTenantAuth:
 
         return TenantContext(tenant_config)
 
-    async def get_tenant_database_config(self, tenant_id: str) -> Dict[str, Any]:
+    async def get_tenant_database_config(self, tenant_id: str) -> dict[str, Any]:
         """Get database configuration for tenant based on strategy"""
         if self.strategy == TenantStrategy.DATABASE_PER_TENANT:
             # Each tenant has its own database
@@ -590,7 +590,7 @@ class MultiTenantAuth:
                 "schema": "public",
             }
 
-    async def create_tenant_resources(self, tenant_id: str) -> Dict[str, Any]:
+    async def create_tenant_resources(self, tenant_id: str) -> dict[str, Any]:
         """Create tenant-specific resources (databases, schemas, etc.)"""
         result = {"created_resources": []}
 
@@ -614,7 +614,7 @@ class MultiTenantAuth:
 
         return result
 
-    async def cleanup_tenant_resources(self, tenant_id: str) -> Dict[str, Any]:
+    async def cleanup_tenant_resources(self, tenant_id: str) -> dict[str, Any]:
         """Clean up tenant-specific resources"""
         result = {"cleaned_resources": []}
 
