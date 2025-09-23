@@ -10,10 +10,10 @@ import sys
 # Add the parent directory to Python path so we can import mcp_auth
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from typing import List, Tuple
+from typing import Any
 
 
-def test_imports() -> List[Tuple[str, bool, str]]:
+def test_imports() -> list[tuple[str, bool, str]]:
     """Test all core module imports"""
     results = []
 
@@ -51,13 +51,13 @@ def test_imports() -> List[Tuple[str, bool, str]]:
     return results
 
 
-def test_settings() -> Tuple[bool, str]:
+def test_settings() -> tuple[bool, str]:
     """Test settings configuration"""
     try:
         from mcp_auth.settings import Settings
 
-        # Test basic settings
-        settings = Settings(
+        # Test basic settings (just check if it loads without error)
+        Settings(
             auth_provider="local",
             jwt_secret="test-secret-key-for-validation",
             provider_config={},
@@ -79,7 +79,7 @@ def test_settings() -> Tuple[bool, str]:
         return False, f"❌ Settings test failed: {e}"
 
 
-def test_providers() -> List[Tuple[str, bool, str]]:
+def test_providers() -> list[tuple[str, bool, str]]:
     """Test provider instantiation"""
     results = []
 
@@ -93,7 +93,8 @@ def test_providers() -> List[Tuple[str, bool, str]]:
             provider_config={},
         )
 
-        provider = LocalProvider(settings)
+        # Test provider instantiation (don't need to store the instance)
+        LocalProvider(settings)
         results.append(("Local provider instantiation", True, "✅ OK"))
 
     except Exception as e:
@@ -110,7 +111,7 @@ def main():
     # Test imports
     print("\n📦 Module Import Tests:")
     import_results = test_imports()
-    for description, success, message in import_results:
+    for description, _success, message in import_results:
         print(f"  {message:<50} {description}")
 
     import_success_count = sum(1 for _, success, _ in import_results if success)
@@ -126,7 +127,7 @@ def main():
     # Test providers
     print("\n🔐 Provider Instantiation Tests:")
     provider_results = test_providers()
-    for description, success, message in provider_results:
+    for description, _success, message in provider_results:
         print(f"  {message:<50} {description}")
 
     # Overall results

@@ -9,7 +9,7 @@ This provider implements Discord OAuth2 authentication with support for:
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import httpx
 from fastapi import HTTPException
@@ -25,7 +25,7 @@ class DiscordProvider(Provider):
 
     provider_name = "discord"
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize Discord provider
 
@@ -218,9 +218,9 @@ class DiscordProvider(Provider):
             logger.error(f"Unexpected error during Discord authentication: {str(e)}")
             raise HTTPException(status_code=500, detail="Authentication error")
 
-    async def _get_user_guild_roles(
-        self, user_id: str, guild_ids: List[str]
-    ) -> Dict[str, List[str]]:
+    async def _get_user_roles_in_guilds(
+        self, user_id: str, guild_ids: list[str]
+    ) -> dict[str, list[str]]:
         """
         Get user's roles in specified guilds using bot token
 
@@ -286,7 +286,7 @@ class DiscordProvider(Provider):
 
         return guild_roles
 
-    def _get_avatar_url(self, user_data: Dict[str, Any]) -> Optional[str]:
+    def _get_avatar_url(self, user_data: dict[str, Any]) -> Optional[str]:
         """Generate Discord avatar URL from user data"""
         if not user_data.get("avatar"):
             # Default avatar
@@ -333,7 +333,7 @@ class DiscordProvider(Provider):
 
     async def exchange_code_for_token(
         self, code: str, redirect_uri: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Exchange authorization code for access token
 
@@ -413,7 +413,7 @@ class DiscordProvider(Provider):
             logger.warning(f"Failed to revoke Discord token: {str(e)}")
             return False
 
-    def get_provider_config_schema(self) -> Dict[str, Any]:
+    def get_provider_config_schema(self) -> dict[str, Any]:
         """Get JSON schema for provider configuration"""
         return {
             "type": "object",
@@ -453,7 +453,7 @@ class DiscordProvider(Provider):
 # Helper functions for Discord integration
 
 
-async def get_discord_user_guilds(token: str) -> List[Dict[str, Any]]:
+async def get_discord_user_guilds(token: str) -> list[dict[str, Any]]:
     """
     Get user's Discord guilds
 
@@ -559,9 +559,9 @@ def create_discord_provider_config(
     client_id: str,
     client_secret: Optional[str] = None,
     bot_token: Optional[str] = None,
-    allowed_guilds: Optional[List[str]] = None,
-    required_roles: Optional[Dict[str, List[str]]] = None,
-) -> Dict[str, Any]:
+    allowed_guilds: Optional[list[str]] = None,
+    required_roles: Optional[dict[str, list[str]]] = None,
+) -> dict[str, Any]:
     """
     Helper function to create Discord provider configuration
 
@@ -654,7 +654,7 @@ def setup_discord_rbac_integration():
                 break
 
         # Check for moderator roles based on Discord roles
-        for guild_id, guild_roles in discord_guild_roles.items():
+        for _guild_id, guild_roles in discord_guild_roles.items():
             mod_keywords = ["moderator", "mod", "staff", "admin", "manager"]
             for role_name in guild_roles:
                 if any(keyword in role_name.lower() for keyword in mod_keywords):

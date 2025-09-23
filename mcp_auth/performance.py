@@ -12,7 +12,7 @@ import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from pydantic import BaseModel
 
@@ -43,7 +43,7 @@ class PerformanceMetric(BaseModel):
     type: MetricType
     value: Union[int, float]
     timestamp: datetime
-    tags: Dict[str, str] = {}
+    tags: dict[str, str] = {}
     tenant_id: Optional[str] = None
 
 
@@ -74,10 +74,10 @@ class PerformanceMonitor:
         self.retention_period = retention_period
 
         # In-memory metrics storage
-        self._metrics: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
-        self._counters: Dict[str, int] = defaultdict(int)
-        self._gauges: Dict[str, float] = defaultdict(float)
-        self._timers: Dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
+        self._metrics: dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self._counters: dict[str, int] = defaultdict(int)
+        self._gauges: dict[str, float] = defaultdict(float)
+        self._timers: dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
 
         # Performance thresholds
         self._thresholds = {
@@ -88,7 +88,7 @@ class PerformanceMonitor:
         }
 
         # Alert callbacks
-        self._alert_callbacks: List[Callable] = []
+        self._alert_callbacks: list[Callable] = []
 
         self._lock = None
 
@@ -117,7 +117,7 @@ class PerformanceMonitor:
         name: str,
         metric_type: MetricType,
         value: Union[int, float],
-        tags: Optional[Dict[str, str]] = None,
+        tags: Optional[dict[str, str]] = None,
         tenant_id: Optional[str] = None,
     ):
         """Record a performance metric"""
@@ -156,7 +156,7 @@ class PerformanceMonitor:
 
     async def get_metric_stats(
         self, name: str, time_range: int = 300  # 5 minutes
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get statistics for a metric"""
 
         cutoff_time = datetime.utcnow() - timedelta(seconds=time_range)
@@ -196,7 +196,7 @@ class PerformanceMonitor:
 
     async def get_dashboard_data(
         self, tenant_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get performance dashboard data"""
 
         dashboard = {
@@ -342,10 +342,10 @@ class OptimizedCache:
         self.redis = None
 
         # Local cache storage
-        self._cache: Dict[str, Any] = {}
-        self._access_times: Dict[str, float] = {}
-        self._access_counts: Dict[str, int] = defaultdict(int)
-        self._expiry_times: Dict[str, float] = {}
+        self._cache: dict[str, Any] = {}
+        self._access_times: dict[str, float] = {}
+        self._access_counts: dict[str, int] = defaultdict(int)
+        self._expiry_times: dict[str, float] = {}
 
         # Performance tracking
         self._hits = 0
@@ -504,7 +504,7 @@ class OptimizedCache:
         self._access_counts.pop(key, None)
         self._expiry_times.pop(key, None)
 
-    async def get_stats(self) -> Dict[str, Any]:
+    async def get_stats(self) -> dict[str, Any]:
         """Get cache performance statistics"""
 
         total_requests = self._hits + self._misses
@@ -673,10 +673,10 @@ class LoadTester:
 
     async def run_test(
         self,
-        endpoints: List[Dict[str, Any]],
+        endpoints: list[dict[str, Any]],
         duration_seconds: int = 60,
         ramp_up_seconds: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run load test against specified endpoints"""
 
         import httpx
@@ -688,7 +688,7 @@ class LoadTester:
         tasks = []
         semaphore = asyncio.Semaphore(self.concurrency)
 
-        async def make_request(endpoint: Dict[str, Any]):
+        async def make_request(endpoint: dict[str, Any]):
             async with semaphore:
                 async with httpx.AsyncClient() as client:
                     try:
@@ -756,7 +756,7 @@ class LoadTester:
         # Calculate statistics
         return self._calculate_stats()
 
-    def _calculate_stats(self) -> Dict[str, Any]:
+    def _calculate_stats(self) -> dict[str, Any]:
         """Calculate load test statistics"""
 
         if not self.results:

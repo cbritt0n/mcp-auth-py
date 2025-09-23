@@ -11,7 +11,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
@@ -92,7 +92,7 @@ class ComplianceRequirement(BaseModel):
     description: str
     control_objective: str
     implementation_guidance: str
-    evidence_required: List[str]
+    evidence_required: list[str]
     automation_available: bool = False
     risk_level: str = "medium"  # low, medium, high, critical
     frequency: str = "monthly"  # daily, weekly, monthly, quarterly, annually
@@ -107,9 +107,9 @@ class ComplianceAssessment(BaseModel):
     assessor: str
     status: str  # compliant, non_compliant, partial, not_applicable
     score: float = Field(ge=0, le=100)
-    findings: List[str] = Field(default_factory=list)
-    recommendations: List[str] = Field(default_factory=list)
-    evidence: Dict[str, Any] = Field(default_factory=dict)
+    findings: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    evidence: dict[str, Any] = Field(default_factory=dict)
     next_assessment_date: datetime
     remediation_due_date: Optional[datetime] = None
 
@@ -130,20 +130,20 @@ class PrivacyRequest(BaseModel):
     verification_expires_at: Optional[datetime] = None
 
     # Data scope
-    data_categories: List[DataCategory] = Field(default_factory=list)
-    data_sources: List[str] = Field(default_factory=list)
+    data_categories: list[DataCategory] = Field(default_factory=list)
+    data_sources: list[str] = Field(default_factory=list)
     date_range_start: Optional[datetime] = None
     date_range_end: Optional[datetime] = None
 
     # Processing details
     processed_at: Optional[datetime] = None
     processed_by: Optional[str] = None
-    completion_details: Dict[str, Any] = Field(default_factory=dict)
+    completion_details: dict[str, Any] = Field(default_factory=dict)
 
     # Metadata
     legal_basis: Optional[str] = None
     retention_override: Optional[bool] = None
-    audit_trail: List[Dict[str, Any]] = Field(default_factory=list)
+    audit_trail: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ConsentRecord(BaseModel):
@@ -155,8 +155,8 @@ class ConsentRecord(BaseModel):
 
     # Consent details
     purpose: ConsentPurpose
-    data_categories: List[DataCategory]
-    processing_activities: List[str]
+    data_categories: list[DataCategory]
+    processing_activities: list[str]
 
     # Consent lifecycle
     granted_at: datetime = Field(default_factory=datetime.utcnow)
@@ -185,8 +185,8 @@ class ComplianceMonitor:
     def __init__(self, redis_url: Optional[str] = None):
         self.redis_url = redis_url
         self.redis = None
-        self._requirements: Dict[ComplianceStandard, List[ComplianceRequirement]] = {}
-        self._assessments: Dict[str, List[ComplianceAssessment]] = {}
+        self._requirements: dict[ComplianceStandard, list[ComplianceRequirement]] = {}
+        self._assessments: dict[str, list[ComplianceAssessment]] = {}
         self._lock = None
 
     def _ensure_lock(self):
@@ -319,7 +319,7 @@ class ComplianceMonitor:
     async def add_standard(
         self,
         standard: ComplianceStandard,
-        requirements: List[ComplianceRequirement],
+        requirements: list[ComplianceRequirement],
         audit_frequency: str = "monthly",
     ):
         """Add compliance standard with requirements"""
@@ -552,10 +552,10 @@ class ComplianceMonitor:
     async def generate_report(
         self,
         tenant_id: str,
-        standards: List[ComplianceStandard],
+        standards: list[ComplianceStandard],
         format: str = "detailed",
         include_recommendations: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate compliance report"""
 
         report = {
@@ -672,8 +672,8 @@ class PrivacyManager:
     def __init__(self, redis_url: Optional[str] = None):
         self.redis_url = redis_url
         self.redis = None
-        self._privacy_requests: Dict[str, PrivacyRequest] = {}
-        self._consent_records: Dict[str, List[ConsentRecord]] = {}
+        self._privacy_requests: dict[str, PrivacyRequest] = {}
+        self._consent_records: dict[str, list[ConsentRecord]] = {}
         self._lock = None
 
     def _ensure_lock(self):
@@ -699,7 +699,7 @@ class PrivacyManager:
         user_id: str,
         request_type: PrivacyRequestType,
         requested_by: str,
-        data_categories: Optional[List[DataCategory]] = None,
+        data_categories: Optional[list[DataCategory]] = None,
         verification_required: bool = True,
     ) -> PrivacyRequest:
         """Submit a privacy request"""
@@ -766,7 +766,7 @@ class PrivacyManager:
         verification_code: str,
         scope: str = "all_data",
         retain_audit_logs: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Process GDPR right to be forgotten request"""
 
         # Find and verify the deletion request
@@ -834,7 +834,7 @@ class PrivacyManager:
 
     async def export_user_data(
         self, user_id: str, format: str = "json", include_metadata: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Export user data for GDPR data portability"""
 
         export_data = {
@@ -877,7 +877,7 @@ class PrivacyManager:
         tenant_id: str,
         user_id: str,
         purpose: ConsentPurpose,
-        data_categories: List[DataCategory],
+        data_categories: list[DataCategory],
         consent_text: str,
         privacy_policy_version: str,
         granted_by: str = "user_action",
@@ -968,7 +968,7 @@ class PrivacyManager:
 async def setup_compliance_system(
     app,
     redis_url: Optional[str] = None,
-    enabled_standards: Optional[List[ComplianceStandard]] = None,
+    enabled_standards: Optional[list[ComplianceStandard]] = None,
 ):
     """Setup compliance monitoring system with FastAPI"""
     from fastapi import APIRouter, Depends
@@ -1003,7 +1003,7 @@ async def setup_compliance_system(
     @router.get("/reports/{tenant_id}")
     async def generate_compliance_report(
         tenant_id: str,
-        standards: List[ComplianceStandard] = None,
+        standards: list[ComplianceStandard] = None,
         format: str = "detailed",
         principal=Depends(require_admin_principal),
     ):
@@ -1018,7 +1018,7 @@ async def setup_compliance_system(
 
     @router.post("/privacy/requests")
     async def submit_privacy_request(
-        request_data: Dict[str, Any], tenant_id: str, user_id: str
+        request_data: dict[str, Any], tenant_id: str, user_id: str
     ):
         """Submit privacy request (GDPR data subject rights)"""
         request = await privacy_manager.submit_privacy_request(

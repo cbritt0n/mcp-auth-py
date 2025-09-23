@@ -10,7 +10,7 @@ This provider implements GitHub OAuth2 authentication with support for:
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import httpx
 from fastapi import HTTPException
@@ -26,7 +26,7 @@ class GitHubProvider(Provider):
 
     provider_name = "github"
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize GitHub provider
 
@@ -270,7 +270,7 @@ class GitHubProvider(Provider):
 
     async def exchange_code_for_token(
         self, code: str, redirect_uri: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Exchange authorization code for access token
 
@@ -346,7 +346,7 @@ class GitHubProvider(Provider):
             logger.warning(f"Failed to revoke GitHub token: {str(e)}")
             return False
 
-    def get_provider_config_schema(self) -> Dict[str, Any]:
+    def get_provider_config_schema(self) -> dict[str, Any]:
         """Get JSON schema for provider configuration"""
         return {
             "type": "object",
@@ -394,7 +394,7 @@ class GitHubProvider(Provider):
 
 async def get_github_user_repositories(
     token: str, api_base_url: str = "https://api.github.com"
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Get user's GitHub repositories
 
@@ -475,10 +475,10 @@ async def check_github_repository_access(
 def create_github_provider_config(
     client_id: str,
     client_secret: Optional[str] = None,
-    allowed_organizations: Optional[List[str]] = None,
-    required_teams: Optional[Dict[str, List[str]]] = None,
+    allowed_organizations: Optional[list[str]] = None,
+    required_teams: Optional[dict[str, list[str]]] = None,
     enterprise_server_url: Optional[str] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Helper function to create GitHub provider configuration
 
